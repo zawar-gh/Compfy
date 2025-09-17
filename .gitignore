@@ -1,0 +1,67 @@
+# -----------------
+# Python / Django
+# -----------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+.env.*
+.venv/
+venv/
+*/.venv/
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# -----------------
+# Node / Frontend
+# -----------------
+node_modules/
+Frontend/node_modules/
+dist/
+build/
+
+# -----------------
+# IDEs / OS / misc
+# -----------------
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+.DS_Store
+Thumbs.db
+*.log
+*.bak
+*.swp
+*.tmp
+# Office temp files
+~$*
+
+# -----------------
+# Python packaging
+# -----------------
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+
+# -----------------
+# Testing / coverage
+# -----------------
+.coverage
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+
+# -----------------
+# Optional: lock files you might want to keep
+# -----------------
+# keep package-lock.json or pnpm-lock.yaml if you want deterministic frontend builds
+
+# -----------------
+# Local env overrides
+# -----------------
+.env.local
