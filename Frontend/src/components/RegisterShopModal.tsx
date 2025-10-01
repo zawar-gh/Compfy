@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { X, Store, Phone, MapPin, Building } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Vendor } from '../types';
+import React, { useState } from "react";
+import { motion } from "motion/react";
+import { X, Store, Phone, MapPin, Building } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import { Vendor } from "../types";
+import { registerShop } from "../services/api";
 
 interface RegisterShopModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (shopData: Omit<Vendor, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (
+    shopData: Omit<Vendor, "id" | "userId" | "createdAt" | "updatedAt">
+  ) => void;
 }
 
 interface ShopForm {
@@ -21,12 +29,16 @@ interface ShopForm {
   address: string;
 }
 
-export default function RegisterShopModal({ isOpen, onClose, onSubmit }: RegisterShopModalProps) {
+export default function RegisterShopModal({
+  isOpen,
+  onClose,
+  onSubmit,
+}: RegisterShopModalProps) {
   const [form, setForm] = useState<ShopForm>({
-    shopName: '',
-    phone: '',
-    city: '',
-    address: ''
+    shopName: "",
+    phone: "",
+    city: "",
+    address: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -35,21 +47,21 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
     const newErrors: Record<string, string> = {};
 
     if (!form.shopName.trim()) {
-      newErrors.shopName = 'Shop name is required';
+      newErrors.shopName = "Shop name is required";
     }
 
     if (!form.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/\s/g, ''))) {
-      newErrors.phone = 'Please enter a valid phone number';
+      newErrors.phone = "Phone number is required";
+    } else if (!/^[\+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/\s/g, ""))) {
+      newErrors.phone = "Please enter a valid phone number";
     }
 
     if (!form.city.trim()) {
-      newErrors.city = 'City is required';
+      newErrors.city = "City is required";
     }
 
     if (!form.address.trim()) {
-      newErrors.address = 'Full address is required';
+      newErrors.address = "Full address is required";
     }
 
     setErrors(newErrors);
@@ -61,27 +73,29 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
 
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onSubmit({
+      // ✅ Real API call to Django backend
+      const newShop = await registerShop({
         shopName: form.shopName.trim(),
         phone: form.phone.trim(),
         city: form.city.trim(),
-        address: form.address.trim()
+        address: form.address.trim(),
       });
-      
+
+      onSubmit(newShop); // Pass created shop with real backend ID
+
       // Reset form
       setForm({
-        shopName: '',
-        phone: '',
-        city: '',
-        address: ''
+        shopName: "",
+        phone: "",
+        city: "",
+        address: "",
       });
-      
+
       onClose();
     } catch (error) {
-      setErrors({ general: 'Failed to register shop. Please try again.' });
+      setErrors({
+        general: "Failed to register shop. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +120,7 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
           <DialogDescription className="sr-only">
             Register your shop to start selling on Compfy
           </DialogDescription>
-          
+
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Store className="w-5 h-5 text-cyan-400" />
@@ -131,7 +145,9 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="shopName" className="text-gray-300">Shop Name</Label>
+              <Label htmlFor="shopName" className="text-gray-300">
+                Shop Name
+              </Label>
               <div className="relative">
                 <Store className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -139,7 +155,9 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
                   type="text"
                   placeholder="Enter your shop name"
                   value={form.shopName}
-                  onChange={(e) => setForm(prev => ({ ...prev, shopName: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, shopName: e.target.value }))
+                  }
                   className="pl-10 bg-slate-800/50 border-slate-600/50 text-white placeholder-gray-400"
                   disabled={isLoading}
                 />
@@ -150,7 +168,9 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-gray-300">Phone Number</Label>
+              <Label htmlFor="phone" className="text-gray-300">
+                Phone Number
+              </Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -158,7 +178,9 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
                   type="tel"
                   placeholder="Enter phone number"
                   value={form.phone}
-                  onChange={(e) => setForm(prev => ({ ...prev, phone: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, phone: e.target.value }))
+                  }
                   className="pl-10 bg-slate-800/50 border-slate-600/50 text-white placeholder-gray-400"
                   disabled={isLoading}
                 />
@@ -169,7 +191,9 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="city" className="text-gray-300">City</Label>
+              <Label htmlFor="city" className="text-gray-300">
+                City
+              </Label>
               <div className="relative">
                 <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
@@ -177,7 +201,9 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
                   type="text"
                   placeholder="Enter your city"
                   value={form.city}
-                  onChange={(e) => setForm(prev => ({ ...prev, city: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, city: e.target.value }))
+                  }
                   className="pl-10 bg-slate-800/50 border-slate-600/50 text-white placeholder-gray-400"
                   disabled={isLoading}
                 />
@@ -188,14 +214,18 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-gray-300">Full Address</Label>
+              <Label htmlFor="address" className="text-gray-300">
+                Full Address
+              </Label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                 <Textarea
                   id="address"
                   placeholder="Enter your complete shop address"
                   value={form.address}
-                  onChange={(e) => setForm(prev => ({ ...prev, address: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, address: e.target.value }))
+                  }
                   className="pl-10 bg-slate-800/50 border-slate-600/50 text-white placeholder-gray-400 min-h-20"
                   disabled={isLoading}
                 />
@@ -220,7 +250,7 @@ export default function RegisterShopModal({ isOpen, onClose, onSubmit }: Registe
               disabled={isLoading}
               className="flex-1 neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50"
             >
-              {isLoading ? 'Registering...' : 'Register Shop'}
+              {isLoading ? "Registering..." : "Register Shop"}
             </Button>
           </div>
         </motion.div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   ArrowLeft, 
@@ -26,6 +26,8 @@ import {
   AlertDialogTitle,
 } from './ui/alert-dialog';
 import { PCBuild, Vendor } from '../types';
+import { getInventory, updateInventory } from '../services/api';
+import { bulkUpdateInventory } from '../services/api';
 
 interface CheckInventoryPageProps {
   vendor: Vendor;
@@ -41,55 +43,42 @@ type SortField = 'build_name' | 'price';
 type SortDirection = 'asc' | 'desc';
 
 export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPageProps) {
-  // Mock inventory data for the vendor
-  const [builds, setBuilds] = useState<EditableBuild[]>([
-    {
-      id: 'vendor-1',
-      name: 'Gaming Beast i5',
-      category: 'gaming',
-      intensity: 'casual',
-      totalCost: 45000,
-      estimatedWattage: 400,
-      compatibility: 'optimized',
-      city: vendor.city,
-      components: {
-        cpu: { name: 'Intel Core i5-8400', details: '6 cores, 2.8GHz' },
-        gpu: { name: 'GTX 1060 6GB', details: 'NVIDIA Gaming Graphics' },
-        ram: { name: '16GB DDR4', details: '2666MHz' },
-        storage: { name: '256GB SSD + 1TB HDD', details: 'Fast boot + storage' },
-        motherboard: { name: 'Standard Motherboard', details: 'Compatible chipset' },
-        psu: { name: 'Standard PSU', details: '500W 80+ Bronze' },
-        cooling: { name: 'Standard Casing', details: 'Mid-tower case' }
-      },
-      upgradesSuggestions: []
-    },
-    {
-      id: 'vendor-2',
-      name: 'Office Pro i3',
-      category: 'office',
-      intensity: 'casual',
-      totalCost: 25000,
-      estimatedWattage: 250,
-      compatibility: 'optimized',
-      city: vendor.city,
-      components: {
-        cpu: { name: 'Intel Core i3-8100', details: '4 cores, 3.6GHz' },
-        gpu: { name: 'Intel UHD 630', details: 'Integrated graphics' },
-        ram: { name: '8GB DDR4', details: '2666MHz' },
-        storage: { name: '256GB SSD', details: 'Fast storage' },
-        motherboard: { name: 'Standard Motherboard', details: 'Compatible chipset' },
-        psu: { name: 'Standard PSU', details: '300W 80+ Bronze' },
-        cooling: { name: 'Standard Casing', details: 'Compact case' }
-      },
-      upgradesSuggestions: []
-    }
-  ]);
-
+  const [builds, setBuilds] = useState<EditableBuild[]>([]);
   const [sortField, setSortField] = useState<SortField>('build_name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [hasChanges, setHasChanges] = useState(false);
   const [showDeleteAllDialog, setShowDeleteAllDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // 🔹 Load vendor inventory from backend
+  useEffect(() => {
+  const fetchInventory = async () => {
+    try {
+      const response = await getInventory(vendor.id);
+
+      // Map backend response to EditableBuild
+      const mappedBuilds: EditableBuild[] = response.data.map((item: any) => ({
+        id: item.id,
+        name: item.build.title,
+        totalCost: item.build.price,
+        components: {
+          cpu: { name: item.build.cpu },
+          gpu: { name: item.build.gpu },
+          ram: { name: item.build.ram },
+          storage: { name: item.build.storage },
+        },
+        isEditing: false,
+        isSelected: false,
+      }));
+
+      setBuilds(mappedBuilds);
+    } catch (err) {
+      console.error("Failed to fetch inventory", err);
+    }
+  };
+
+  fetchInventory();
+  }, [vendor.id]);
 
   const selectedBuilds = builds.filter(build => build.isSelected);
   const selectedCount = selectedBuilds.length;
@@ -175,18 +164,39 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
     setShowDeleteAllDialog(false);
   };
 
-  const handleSaveChanges = async () => {
-    setIsLoading(true);
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setHasChanges(false);
-    } catch (error) {
-      console.error('Failed to save changes');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
+ // 🔹 Save changes to backend
+ const handleSaveChanges = async () => {
+  if (builds.length === 0) return; // nothing to save
+
+  setIsLoading(true);
+  try {
+    // Map builds to the backend expected format
+   const payload = builds.map(build => ({
+      id: build.id,
+      build: {
+        title: build.name,
+        price: build.totalCost,
+        cpu: build.components.cpu.name,
+        gpu: build.components.gpu.name,
+        ram: build.components.ram.name,
+        storage: build.components.storage.name,
+      }
+    }));
+
+    // Call API
+    await bulkUpdateInventory(vendor.id, payload);
+
+    setHasChanges(false);
+    console.log("Inventory successfully updated.");
+  } catch (error) {
+    console.error("Failed to save changes", error);
+  } finally {
+    setIsLoading(false);
+  }
+ };
+
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PK', {
@@ -358,44 +368,6 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
             )}
           </CardContent>
         </Card>
-        
-        {/* Add New Build Button */}
-        <div className="flex justify-center mt-6">
-          <Button
-            onClick={() => {
-              // Create a new build with default values
-              const newBuild: EditableBuild = {
-                id: `vendor-${Date.now()}`,
-                name: 'New Build',
-                category: 'gaming',
-                intensity: 'casual',
-                totalCost: 0,
-                estimatedWattage: 0,
-                compatibility: 'optimized',
-                city: vendor.city,
-                vendor: vendor.shopName,
-                components: {
-                  cpu: { name: 'CPU Name', details: 'CPU Details' },
-                  gpu: { name: 'GPU Name', details: 'GPU Details' },
-                  ram: { name: 'RAM Name', details: 'RAM Details' },
-                  storage: { name: 'Storage Name', details: 'Storage Details' },
-                  motherboard: { name: 'Motherboard Name', details: 'Motherboard Details' },
-                  psu: { name: 'PSU Name', details: 'PSU Details' },
-                  cooling: { name: 'Cooling Name', details: 'Cooling Details' }
-                },
-                upgradesSuggestions: [],
-                isEditing: true,
-                isSelected: false
-              };
-              setBuilds(prev => [...prev, newBuild]);
-              setHasChanges(true);
-            }}
-            className="flex items-center gap-2 neon-button bg-purple-900/30 hover:bg-purple-900/50 text-white border-purple-500/50"
-          >
-            <span className="text-xl font-bold">+</span>
-            Add New Build
-          </Button>
-        </div>
       </motion.div>
 
       {/* Delete All Confirmation Dialog */}
@@ -427,7 +399,7 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
   );
 }
 
-// Separate component for each table row to manage editing state
+// 🔹 Row Component
 function BuildRow({ 
   build, 
   onEdit, 

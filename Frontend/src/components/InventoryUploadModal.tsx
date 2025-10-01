@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Vendor } from '../types';
+import { uploadInventory } from '../services/api'; // ✅ real API import
 
 interface InventoryUploadModalProps {
   isOpen: boolean;
@@ -15,10 +16,10 @@ interface InventoryUploadModalProps {
 }
 
 interface UploadResult {
-  rowsProcessed: number;
-  rowsCreated: number;
-  rowsUpdated: number;
-  rowsInvalid: number;
+  rows_processed: number;
+  rows_created: number;
+  rows_updated: number;
+  rows_invalid: number;
   errors: string[];
 }
 
@@ -34,7 +35,6 @@ export default function InventoryUploadModal({
   const [errors, setErrors] = useState<string[]>([]);
 
   const handleDownloadTemplate = () => {
-    // Create a mock Excel template download
     const csvContent = `build_name,cpu_model,gpu_model,ram,storage,psu,casing,price,city
 Gaming Beast i5,Intel Core i5-8400,GTX 1060 6GB,16GB DDR4,256GB SSD + 1TB HDD,Standard PSU,Standard Casing,45000,${vendor.city}
 Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Standard Casing,25000,${vendor.city}`;
@@ -51,7 +51,6 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.csv')) {
         setErrors(['Please select an Excel (.xlsx) or CSV (.csv) file']);
         return;
@@ -73,27 +72,19 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
     setErrors([]);
 
     try {
-      // Simulate file processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock upload result
-      const mockResult: UploadResult = {
-        rowsProcessed: 12,
-        rowsCreated: 10,
-        rowsUpdated: 2,
-        rowsInvalid: 0,
-        errors: []
-      };
-      
-      setUploadResult(mockResult);
-      
-      // Auto-navigate to inventory after 2 seconds
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('vendorId', vendor.id.toString());
+
+      const result = await uploadInventory(formData); // ✅ send to backend
+      setUploadResult(result);
+
       setTimeout(() => {
         onInventoryUploaded();
       }, 2000);
-      
-    } catch (error) {
-      setErrors(['Failed to upload inventory. Please try again.']);
+
+    } catch (error: any) {
+      setErrors([error.message || 'Failed to upload inventory. Please try again.']);
     } finally {
       setIsUploading(false);
     }
@@ -138,7 +129,7 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
             </Button>
           </div>
 
-          {/* Upload Result */}
+          {/* ✅ Upload Result */}
           {uploadResult && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -150,11 +141,11 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
                 <h3 className="font-semibold text-green-300">Upload Successful!</h3>
               </div>
               <div className="space-y-1 text-sm text-green-200">
-                <p>• {uploadResult.rowsProcessed} rows processed</p>
-                <p>• {uploadResult.rowsCreated} new builds created</p>
-                <p>• {uploadResult.rowsUpdated} builds updated</p>
-                {uploadResult.rowsInvalid > 0 && (
-                  <p className="text-yellow-300">• {uploadResult.rowsInvalid} invalid rows skipped</p>
+                <p>• {uploadResult.rows_processed} rows processed</p>
+                <p>• {uploadResult.rows_created} new builds created</p>
+                <p>• {uploadResult.rows_updated} builds updated</p>
+                {uploadResult.rows_invalid > 0 && (
+                  <p className="text-yellow-300">• {uploadResult.rows_invalid} invalid rows skipped</p>
                 )}
               </div>
               <p className="text-xs text-green-300 mt-2">
@@ -163,7 +154,7 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
             </motion.div>
           )}
 
-          {/* Errors */}
+          {/* ❌ Errors */}
           {errors.length > 0 && (
             <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
