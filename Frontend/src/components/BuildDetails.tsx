@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { 
   ArrowLeft, 
   Save, 
-  Download, 
   CheckCircle, 
   AlertTriangle,
   Zap,
@@ -11,15 +10,17 @@ import {
   TrendingUp,
   Cpu,
   Monitor,
-  ExternalLink,
-  ShoppingBag
+  MapPin,
+  CreditCard,
+  Printer
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import { PCBuild, ElectricitySettings, CategoryType } from '../types';
+import { PCBuild, ElectricitySettings, CategoryType, User } from '../types';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import BuyBuildModal from './BuyBuildModal';
 
 interface BuildDetailsProps {
   build: PCBuild;
@@ -29,6 +30,7 @@ interface BuildDetailsProps {
   isSaved: boolean;
   themeCategory?: CategoryType | null;
   onOpenPriceEditor?: () => void;
+  user?: User | null;
 }
 
 export default function BuildDetails({ 
@@ -38,8 +40,11 @@ export default function BuildDetails({
   onBackToBuilds,
   isSaved,
   themeCategory,
-  onOpenPriceEditor 
+  onOpenPriceEditor,
+  user 
 }: BuildDetailsProps) {
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PK', {
       style: 'currency',
@@ -90,85 +95,9 @@ export default function BuildDetails({
     return 'shadow-[0_0_15px_rgba(59,130,246,0.4),_0_0_30px_rgba(59,130,246,0.2)] border-blue-500/50';
   };
 
-  const getShoppingNeonClasses = () => {
-    // Always use cyan/blue for shopping cards regardless of intensity
-    return 'shadow-[0_0_15px_rgba(6,182,212,0.4),_0_0_30px_rgba(6,182,212,0.2)] border-cyan-500/50';
-  };
-
   const getUpgradeNeonClasses = () => {
     // Always use blue for upgrade cards regardless of intensity
     return 'shadow-[0_0_15px_rgba(59,130,246,0.4),_0_0_30px_rgba(59,130,246,0.2)] border-blue-500/50';
-  };
-
-  const getOptimizedSearchQuery = (build: PCBuild) => {
-    let baseQuery = '';
-    
-    // For Dell OptiPlex builds, use very specific short terms
-    if (build.name.includes('Dell OptiPlex')) {
-      baseQuery = "i5 6th";
-    } else {
-      // Extract CPU generation and model for shorter searches
-      const cpuName = build.components.cpu.name.toLowerCase();
-      
-      // For Intel processors
-      if (cpuName.includes('i5')) {
-        if (cpuName.includes('6400') || cpuName.includes('6500') || cpuName.includes('6600')) {
-          baseQuery = "i5 6th";
-        } else if (cpuName.includes('7400') || cpuName.includes('7500') || cpuName.includes('7600')) {
-          baseQuery = "i5 7th";
-        } else if (cpuName.includes('8400') || cpuName.includes('8500') || cpuName.includes('8600')) {
-          baseQuery = "i5 8th";
-        } else {
-          baseQuery = "i5";
-        }
-      } else if (cpuName.includes('i7')) {
-        if (cpuName.includes('7700')) {
-          baseQuery = "i7 7th";
-        } else if (cpuName.includes('8700')) {
-          baseQuery = "i7 8th";
-        } else if (cpuName.includes('9900')) {
-          baseQuery = "i9 9th";
-        } else {
-          baseQuery = "i7";
-        }
-      } else if (cpuName.includes('ryzen 3')) {
-        baseQuery = "ryzen 3";
-      } else if (cpuName.includes('ryzen 5')) {
-        baseQuery = "ryzen 5";
-      } else if (cpuName.includes('ryzen 7')) {
-        baseQuery = "ryzen 7";
-      } else {
-        baseQuery = "desktop";
-      }
-
-      // Check if build has dedicated GPU and add GPU brand for gaming builds
-      const hasIntegratedGPU = build.components.gpu.name.toLowerCase().includes('integrated') || 
-                              build.components.gpu.name.toLowerCase().includes('igpu') ||
-                              build.components.gpu.name.toLowerCase().includes('uhd') ||
-                              build.components.gpu.name.toLowerCase().includes('vega') ||
-                              build.components.gpu.name.toLowerCase().includes('hd graphics');
-
-      if (!hasIntegratedGPU && build.category === 'gaming') {
-        // For builds with dedicated GPU, add simple GPU terms
-        const gpuName = build.components.gpu.name.toLowerCase();
-        if (gpuName.includes('gtx 1050')) {
-          baseQuery = cpuName.includes('i5') ? "i5 gtx 1050" : "gtx 1050";
-        } else if (gpuName.includes('gtx 1060')) {
-          baseQuery = cpuName.includes('i5') ? "i5 gtx 1060" : "gtx 1060";
-        } else if (gpuName.includes('gtx 1070')) {
-          baseQuery = cpuName.includes('i7') ? "i7 gtx 1070" : "gtx 1070";
-        } else if (gpuName.includes('gtx 1080')) {
-          baseQuery = cpuName.includes('i7') ? "i7 gtx 1080" : "gtx 1080";
-        } else if (gpuName.includes('rtx')) {
-          baseQuery = "rtx gaming";
-        } else {
-          baseQuery = "gaming";
-        }
-      }
-    }
-    
-    // Add "pc" at the end
-    return baseQuery + " pc";
   };
 
   const getBuildImage = (build: PCBuild) => {
@@ -221,23 +150,57 @@ export default function BuildDetails({
     }
   };
 
-  const handleDownloadPDF = () => {
+  const handlePrintDetails = () => {
     // In a real app, this would generate and download a PDF
-    const buildData = {
-      name: build.name,
-      totalCost: build.totalCost,
-      components: build.components,
-      powerUsage: build.estimatedWattage,
-      electricityRate: electricitySettings.pricePerUnit,
-      currency: electricitySettings.currency
-    };
+    // For now, we'll create a formatted text version
+    const buildDetails = `
+COMPFY PC BUILD DETAILS
+=====================
+
+Build Name: ${build.name}
+Category: ${getCategoryDisplay(build.category)} - ${build.intensity.charAt(0).toUpperCase() + build.intensity.slice(1)}
+Total Cost: ${formatCurrency(build.totalCost)}
+Power Consumption: ${build.estimatedWattage}W
+${build.vendor ? `Vendor City: ${build.city}` : ''}
+
+COMPONENTS:
+-----------
+Processor (CPU): ${build.components.cpu.name}
+${build.components.cpu.details}
+
+Graphics Card (GPU): ${build.components.gpu.name}
+${build.components.gpu.details}
+
+Memory (RAM): ${build.components.ram.name}
+${build.components.ram.details}
+
+Storage: ${build.components.storage.name}
+${build.components.storage.details}
+
+Motherboard: ${build.components.motherboard.name}
+${build.components.motherboard.details}
+
+Power Supply (PSU): ${build.components.psu.name}
+${build.components.psu.details}
+
+Cooling: ${build.components.cooling.name}
+${build.components.cooling.details}
+
+POWER & ELECTRICITY:
+------------------
+Electricity Rate: ${formatCurrency(electricitySettings.pricePerUnit)}/kWh
+Monthly Cost (1h daily): ${formatCurrency(calculatePowerCost(1, 30))}
+Monthly Cost (4h daily): ${formatCurrency(calculatePowerCost(4, 30))}
+Monthly Cost (8h daily): ${formatCurrency(calculatePowerCost(8, 30))}
+
+Generated by Compfy - comfortably build your pc
+    `;
     
-    const dataStr = JSON.stringify(buildData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const dataBlob = new Blob([buildDetails], { type: 'text/plain' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${build.name.replace(/\s+/g, '_')}_build.json`;
+    link.download = `${build.name.replace(/\s+/g, '_')}_build_details.txt`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -277,22 +240,23 @@ export default function BuildDetails({
             </Button>
             <Button
               variant="outline"
-              onClick={handleDownloadPDF}
+              onClick={handlePrintDetails}
               className="flex items-center gap-2 neon-button text-gray-200 hover:text-white border-cyan-500/30 hover:border-cyan-400 bg-transparent hover:bg-cyan-900/20"
             >
-              <Download className="w-4 h-4" />
-              Export Data
+              <Printer className="w-4 h-4" />
+              Print Details
             </Button>
-            {onOpenPriceEditor && (
+            {build.vendor && user && (
               <Button
                 variant="outline"
-                onClick={onOpenPriceEditor}
-                className="flex items-center gap-2 neon-button text-gray-200 hover:text-white border-cyan-500/30 hover:border-cyan-400 bg-transparent hover:bg-cyan-900/20"
+                onClick={() => setShowBuyModal(true)}
+                className="flex items-center gap-2 neon-button bg-green-900/20 hover:bg-green-900/40 text-green-300 border-green-500/50 hover:border-green-400"
               >
-                <Monitor className="w-4 h-4" />
-                Edit Prices
+                <CreditCard className="w-4 h-4" />
+                Buy this Build
               </Button>
             )}
+
           </div>
         </div>
 
@@ -322,6 +286,14 @@ export default function BuildDetails({
           <div className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-4">
             {formatCurrency(build.totalCost)}
           </div>
+          
+          {/* Vendor Information */}
+          {build.vendor && build.city && (
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <MapPin className="w-4 h-4 text-gray-400" />
+              <span className="text-gray-300 text-sm">Available in {build.city}</span>
+            </div>
+          )}
           
           {/* AI Generated PC Build Image - Smaller */}
           <motion.div
@@ -469,70 +441,13 @@ export default function BuildDetails({
           </Card>
         </motion.div>
 
-        {/* Find Similar Builds and Future Upgrade Options - Side by side */}
+        {/* Future Upgrade Suggestions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="lg:col-span-4"
         >
-          {/* Find Similar Builds */}
-          <Card className={`cyber-card ${getShoppingNeonClasses()}`}>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base text-white">
-                <ShoppingBag className="w-4 h-4 text-cyan-400" />
-                Find Similar Builds
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-1 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs justify-start neon-button text-gray-200 hover:text-white border-cyan-500/30 hover:border-cyan-400 bg-cyan-900/10 hover:bg-cyan-900/20"
-                  onClick={() => window.open(`https://www.daraz.pk/catalog/?q=${encodeURIComponent(getOptimizedSearchQuery(build))}`, '_blank')}
-                >
-                  <div className="w-4 h-4 bg-orange-500 rounded text-white flex items-center justify-center text-xs mr-2">
-                    D
-                  </div>
-                  Search on Daraz
-                  <ExternalLink className="w-3 h-3 ml-auto" />
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs justify-start neon-button text-gray-200 hover:text-white border-cyan-500/30 hover:border-cyan-400 bg-cyan-900/10 hover:bg-cyan-900/20"
-                  onClick={() => window.open(`https://www.olx.com.pk/items/q-${encodeURIComponent(getOptimizedSearchQuery(build).replace(/\s+/g, '-'))}`, '_blank')}
-                >
-                  <div className="w-4 h-4 bg-blue-600 rounded text-white flex items-center justify-center text-xs mr-2">
-                    O
-                  </div>
-                  Search on OLX
-                  <ExternalLink className="w-3 h-3 ml-auto" />
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs justify-start neon-button text-gray-200 hover:text-white border-cyan-500/30 hover:border-cyan-400 bg-cyan-900/10 hover:bg-cyan-900/20"
-                  onClick={() => window.open(`https://www.aliexpress.com/wholesale?SearchText=${encodeURIComponent(getOptimizedSearchQuery(build))}`, '_blank')}
-                >
-                  <div className="w-4 h-4 bg-red-500 rounded text-white flex items-center justify-center text-xs mr-2">
-                    A
-                  </div>
-                  Search on AliExpress
-                  <ExternalLink className="w-3 h-3 ml-auto" />
-                </Button>
-              </div>
-              
-              <div className="text-xs text-gray-400">
-                Optimized search terms: "{getOptimizedSearchQuery(build)}"
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Future Upgrade Suggestions */}
           <Card className={`cyber-card ${getUpgradeNeonClasses()}`}>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base text-white">
@@ -553,6 +468,16 @@ export default function BuildDetails({
           </Card>
         </motion.div>
       </div>
+
+      {/* Buy Build Modal */}
+      {build.vendor && user && (
+        <BuyBuildModal
+          isOpen={showBuyModal}
+          onClose={() => setShowBuyModal(false)}
+          build={build}
+          user={user}
+        />
+      )}
     </div>
   );
 }

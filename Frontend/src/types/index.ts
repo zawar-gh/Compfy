@@ -13,6 +13,9 @@ export interface PCBuild {
   estimatedWattage: number;
   compatibility: 'optimized' | 'warning';
   imageUrl?: string; // Optional product image URL
+  vendor?: Vendor; // Optional vendor info for vendor builds
+  city?: string; // City for vendor builds
+  isActive?: boolean;
   components: {
     cpu: Component;
     gpu: Component;
@@ -23,10 +26,13 @@ export interface PCBuild {
     cooling: Component;
   };
   upgradesSuggestions: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type CategoryType = 'office' | 'editing' | 'gaming';
 export type IntensityType = 'casual' | 'heavy';
+export type UserRole = 'customer' | 'vendor';
 
 export interface ElectricitySettings {
   pricePerUnit: number;
@@ -46,4 +52,52 @@ export interface CategoryConfig {
     description: string;
     tasks: string[];
   };
+}
+
+export interface User {
+  id: string;
+  email?: string;
+  phone?: string;
+  username: string;
+  address: string;
+  role?: UserRole;
+  createdAt: string;
+}
+
+export interface Vendor {
+  id: string;
+  userId: string;
+  shopName: string;
+  phone: string;
+  city: string;
+  address: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavedBuild {
+  id: string;
+  userId: string;
+  buildId: string;
+  build?: PCBuild;
+  savedAt: string;
+}
+
+export interface Purchase {
+  id: string;
+  userId: string;
+  buildId: string;
+  vendorId: string;
+  receiverAddress: string;
+  receiverPhone: string;
+  price: number;
+  status: 'pending' | 'confirmed';
+  createdAt: string;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  vendor: Vendor | null;
+  token: string | null;
 }
