@@ -364,7 +364,12 @@ export default function App() {
             exit={{ opacity: 0, x: 100 }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
           >
-            <VendorDashboard vendor={authState.vendor} onRegisterShop={handleRegisterShop} />
+            <VendorDashboard 
+              vendor={authState.vendor} 
+              onRegisterShop={handleRegisterShop} 
+              onBackToSelection={handleBackToRoleSelection}
+              
+            />
           </motion.div>
         )}
       </AnimatePresence>
