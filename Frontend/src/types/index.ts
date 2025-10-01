@@ -65,14 +65,14 @@ export interface User {
 }
 
 export interface Vendor {
-  id: string;
-  userId: string;
-  shopName: string;
-  phone: string;
+  id?: string;
+  userId?: string;
+  shop_name: string;
+  contact: string;
   city: string;
-  address: string;
-  createdAt: string;
-  updatedAt: string;
+  address?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SavedBuild {

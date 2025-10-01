@@ -87,6 +87,7 @@ export default function App() {
 
   // Authentication
   const handleLogin = (user: User, token: string) => {
+    localStorage.setItem("access_token", token);
     setAuthState({
       isAuthenticated: true,
       user,
@@ -98,6 +99,7 @@ export default function App() {
   };
 
   const handleSignup = (user: User, token: string) => {
+    localStorage.setItem("access_token", token);
     setAuthState({
       isAuthenticated: true,
       user,
