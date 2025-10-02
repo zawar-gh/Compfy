@@ -21,9 +21,6 @@ export default function RoleSelection({ onSelectRole }: RoleSelectionProps) {
         <h2 className="text-2xl font-bold text-white mb-4">
           How can we help you today?
         </h2>
-        <p className="text-gray-300">
-          Choose your role to get started with Compfy
-        </p>
       </motion.div>
 
       <div className="grid md:grid-cols-2 gap-8">

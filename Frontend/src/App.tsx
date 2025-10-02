@@ -29,6 +29,7 @@ import { signup, login } from './api/auth';
 import { categories } from './data/mockData';
 import { registerShop } from './services/api';
 
+
 type AppScreen =
   | 'auth'
   | 'role-selection'
@@ -66,21 +67,33 @@ export default function App() {
   const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>([]);
 
   // Fetch builds from backend
-  useEffect(() => {
-    getBuilds()
-      .then((data) => {
-        const normalized = data.map((b, i) => ({
+ useEffect(() => {
+   getBuilds()
+    .then((data) => {
+      const normalized = data.map((b: any, i: number) => {
+        const category =
+          typeof b.category === "string"
+            ? { id: b.category, name: b.category }
+            : b.category ?? { id: i % 2 === 0 ? "gaming" : "office", name: "Unknown" };
+
+        const intensity =
+          typeof b.intensity === "string"
+            ? { id: b.intensity, name: b.intensity }
+            : b.intensity ?? { id: "casual", name: "Casual" };
+
+        return {
           ...b,
-          category: (b as any).category || (i % 2 === 0 ? 'gaming' : 'office'),
-          intensity: (b as any).intensity || 'casual',
-          isActive: (b as any).isActive ?? true,
-        }));
-        setBuilds(normalized);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch builds:', err);
-        setError('Could not load builds. Check backend and API response.');
+          category,
+          intensity,
+          isActive: b.isActive ?? true,
+        } as PCBuild;
       });
+      setBuilds(normalized);
+    })
+    .catch((err) => {
+      console.error("Failed to fetch builds:", err);
+      setError("Could not load builds. Check backend and API response.");
+    });
   }, []);
 
   // ------------------- HANDLERS -------------------
@@ -237,10 +250,12 @@ export default function App() {
   // Filter builds
   const getFilteredBuilds = (): PCBuild[] => {
     if (!selectedCategory || !selectedIntensity) return [];
+
     return builds.filter(
-      (b) => b.category === selectedCategory && b.intensity === selectedIntensity && b.isActive !== false
+      (b) => b.category.id === selectedCategory && b.intensity.id === selectedIntensity
     );
   };
+
 
   // Theme
   const getThemeClasses = () => 'bg-gradient-to-br from-slate-900 via-gray-900 to-black';

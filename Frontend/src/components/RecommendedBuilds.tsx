@@ -219,23 +219,23 @@ export default function RecommendedBuilds({
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">CPU:</span>
-                      <span className="font-medium text-right text-gray-200">{build.components.cpu.name}</span>
+                      <span className="font-medium text-right text-gray-200">{build.components?.cpu?.name||"N/A"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">GPU:</span>
-                      <span className="font-medium text-right text-gray-200">{build.components.gpu.name}</span>
+                      <span className="font-medium text-right text-gray-200">{build.components?.gpu?.name||"N/A"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">RAM:</span>
-                      <span className="font-medium text-right text-gray-200">{build.components.ram.name}</span>
+                      <span className="font-medium text-right text-gray-200">{build.components?.ram?.name||"N/A"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Storage:</span>
-                      <span className="font-medium text-right text-gray-200">{build.components.storage.name}</span>
+                      <span className="font-medium text-right text-gray-200">{build.components?.storage?.name||"N/A"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">PSU:</span>
-                      <span className="font-medium text-right text-gray-200">{build.components.psu.name}</span>
+                      <span className="font-medium text-right text-gray-200">{build.components?.psu?.name||"N/A"}</span>
                     </div>
                   </div>
                 </div>

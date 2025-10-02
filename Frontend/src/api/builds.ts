@@ -39,8 +39,14 @@ export async function getBuildDetail(id: number): Promise<PCBuild> {
     totalCost: Number(build.totalCost),
     estimatedWattage: build.estimatedWattage || 0,
     components: build.components || {},
-    category: build.category || "gaming",
-    intensity: build.intensity || "casual",
+    category: typeof build.category === "string" 
+      ? build.category 
+      : build.category?.id || "gaming",
+
+    intensity: typeof build.intensity === "string" 
+      ? build.intensity 
+      : build.intensity?.id || "casual",
+
     isActive: build.isActive ?? true
   };
 }
