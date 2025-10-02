@@ -69,43 +69,50 @@ export default function RegisterShopModal({
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setIsLoading(true);
-    try {
-      // ✅ Real API call to Django backend
-      const newShop = await registerShop({
-        shopName: form.shopName.trim(),
-        phone: form.phone.trim(),
-        city: form.city.trim(),
-        address: form.address.trim(),
+  setIsLoading(true);
+  try {
+    const newShop = await registerShop({
+      shop_name: form.shopName.trim(),
+      contact: form.phone.trim(),
+      city: form.city.trim(),
+      address: form.address.trim(),
+    });
+
+    onSubmit(newShop); // Pass created shop with real backend ID
+
+    // Reset form
+    setForm({
+      shopName: "",
+      phone: "",
+      city: "",
+      address: "",
+    });
+
+    onClose();
+  } catch (error: any) {
+    // Handle 400 from backend
+    if (error.response?.status === 400) {
+      setErrors({
+        general: error.response.data.detail || "You already have a shop registered.",
       });
-
-      onSubmit(newShop); // Pass created shop with real backend ID
-
-      // Reset form
-      setForm({
-        shopName: "",
-        phone: "",
-        city: "",
-        address: "",
-      });
-
-      onClose();
-    } catch (error) {
+    } else {
       setErrors({
         general: "Failed to register shop. Please try again.",
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+ };
 
-  const handleClose = () => {
-    if (!isLoading) {
-      onClose();
-    }
-  };
+ const handleClose = () => {
+  if (!isLoading) {
+    onClose();
+  }
+ };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

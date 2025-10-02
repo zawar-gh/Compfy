@@ -98,17 +98,52 @@ export default function App() {
     setCurrentScreen('role-selection');
   };
 
-  const handleSignup = (user: User, token: string) => {
-    localStorage.setItem("access_token", token);
-    setAuthState({
-      isAuthenticated: true,
-      user,
-      vendor: null,
-      token,
+  const handleSignup = async () => {
+  if (!signupForm.username || !signupForm.password || !signupForm.email) {
+    setErrors({ general: "All fields required" });
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await fetch(`${API_BASE}/auth/signup/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: signupForm.username,
+        email: signupForm.email,
+        password: signupForm.password,
+        role: signupForm.role,
+      }),
     });
-    setShowAuthModal(false);
-    setCurrentScreen('role-selection');
-  };
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const messages = Object.values(data).flat().join(" ");
+      setErrors({ general: messages || "Signup failed" });
+      return;
+    }
+
+    const token = data.access;
+    const user: UserType = {
+      id: data.user?.id || data.id,
+      username: data.user?.username || data.username,
+      email: data.user?.email || data.email,
+      address: '',
+      createdAt: '',
+    };
+
+    localStorage.setItem("token", token);
+    onSignup(user, token);
+    onClose();
+   } catch (err) {
+    setErrors({ general: "Signup failed. Please try again." });
+   } finally {
+    setIsLoading(false);
+   }
+ };
+
 
   const handleLogout = () => {
     setAuthState({ isAuthenticated: false, user: null, vendor: null, token: null });
@@ -129,27 +164,22 @@ export default function App() {
     }
   };
 
+
   // Vendor registration
-  const handleRegisterShop = async (
-  shopData: Omit<Vendor, 'id' | 'userId' | 'createdAt' | 'updatedAt'>
- ) => {
+ const handleRegisterShop = async (shopData: Omit<Vendor, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
   if (!authState.user || !authState.token) return;
 
   try {
-    // Call backend API with the token
     const registeredVendor = await registerShop(shopData, authState.token);
-
-    // Update state with returned vendor
     setAuthState((prev) => ({ ...prev, vendor: registeredVendor }));
-
     alert('✅ Shop registered successfully!');
   } catch (err: any) {
-    console.error('Failed to register shop', err.response || err);
-    alert(
-      '❌ Failed to register shop. Make sure you are authenticated and backend is running.'
-    );
+    console.error('Shop registration failed', err.response || err);
+    alert('❌ Failed to register shop. Check console for details.');
   }
  };
+
+
 
   // PC building flows
   const handleCategoryIntensitySelect = (category: CategoryType, intensity: IntensityType) => {
@@ -292,7 +322,7 @@ export default function App() {
           authState={authState}
           savedBuilds={savedBuilds}
           onShowSavedBuilds={() => setShowSavedBuildsModal(true)}
-          onEditProfile={() => {}}
+          onEditProfile={() => setShowProfileModal(true)}
           onEditVendorProfile={() => {}}
           onDeleteProfile={() => {}}
           onLogout={handleLogout}
@@ -311,7 +341,7 @@ export default function App() {
             Compfy
           </h1>
           <p className={`text-xl ${getTextColorClasses()}`}>
-            Comfortably build your PC. Sign up or log in to continue.
+            Build Your PC with Comfort
           </p>
         </motion.header>
       )}
@@ -329,7 +359,7 @@ export default function App() {
           >
             <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-10 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] flex flex-col items-center space-y-6 w-full max-w-md">
               <h1 className="text-4xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
-                Welcome to Compfy
+                Begin your Digital journey
               </h1>
               <div className="flex space-x-4 mt-4 w-full justify-center">
                 <button
@@ -340,7 +370,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="px-6 py-3 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-900/20 rounded-lg transition-all duration-300"
+                  className="px-6 py-3 neon-button bg-purple-900/30 hover:bg-purple-900/50 text-white border border-purple-500/50 rounded-lg transition-all duration-300"
                 >
                   Login
                 </button>
@@ -428,16 +458,21 @@ export default function App() {
         )}
 
         {currentScreen === 'vendor-dashboard' && (
-          <motion.div
-            key="vendor-dashboard"
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            transition={{ duration: 0.5, ease: 'easeInOut' }}
-          >
-            <VendorDashboard vendor={authState.vendor} onRegisterShop={handleRegisterShop} />
+         <motion.div
+           key="vendor-dashboard"
+           initial={{ opacity: 0, x: -100 }}
+           animate={{ opacity: 1, x: 0 }}
+           exit={{ opacity: 0, x: 100 }}
+           transition={{ duration: 0.5, ease: 'easeInOut' }}
+         >
+           <VendorDashboard
+             vendor={authState.vendor}
+             onRegisterShop={handleRegisterShop}
+             onBackToSelection={handleBackToRoleSelection} // <-- pass handler here
+           />
           </motion.div>
         )}
+
       </AnimatePresence>
 
       {/* Modals */}
@@ -463,6 +498,15 @@ export default function App() {
             onClose={() => setShowSavedBuildsModal(false)}
           />
         )}
+        {showProfileModal && authState.user && (
+          <ProfileModal
+            isOpen={showProfileModal}
+            onClose={() => setShowProfileModal(false)}
+            user={authState.user}
+            onLogout={handleLogout}
+          />
+        )}
+
       </AnimatePresence>
     </div>
   );

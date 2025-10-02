@@ -50,9 +50,9 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
       const token = data.access;
 
       const user: UserType = {
-        id: data.user?.id || data.id,
-        username: data.user?.username || data.username,
-        email: data.user?.email || data.email,
+        id: data.user?.id || '',
+        username: data.user?.username || '',
+        email: data.user?.email || '',
         address: data.user?.address || '',
         createdAt: data.user?.created_at || '',
       };
@@ -96,9 +96,9 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
 
       const token = data.access;
       const user: UserType = {
-        id: data.id || data.user?.id,
-        username: data.username || data.user?.username,
-        email: data.email || data.user?.email,
+        id: data.user?.id || '',
+        username: data.user?.username || '',
+        email: data.user?.email || '',
         address: '',
         createdAt: '',
       };
