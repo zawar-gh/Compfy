@@ -28,6 +28,8 @@ import { getBuilds } from './api/builds';
 import { signup, login } from './api/auth';
 import { categories } from './data/mockData';
 import { registerShop } from './services/api';
+import { saveBuild as saveBuildAPI, getSavedBuilds } from "./api/savedBuilds";
+
 
 
 type AppScreen =
@@ -109,6 +111,11 @@ export default function App() {
     });
     setShowAuthModal(false);
     setCurrentScreen('role-selection');
+    
+    getSavedBuilds(token)
+    .then((data) => setSavedBuilds(data))
+    .catch((err) => console.error("Failed to load saved builds:", err));
+
   };
 
   const handleSignup = async () => {
@@ -212,17 +219,21 @@ export default function App() {
     setCurrentScreen('details');
   };
 
-  const handleSaveBuild = (build: PCBuild) => {
-    if (savedBuilds.some((saved) => saved.buildId === build.id)) return;
-    const savedBuild: SavedBuild = {
-      id: `saved-${Date.now()}`,
-      userId: authState.user?.id || 'guest',
-      buildId: build.id,
-      build,
-      savedAt: new Date().toISOString(),
-    };
-    setSavedBuilds((prev) => [...prev, savedBuild]);
-  };
+  const handleSaveBuild = async (build: PCBuild) => {
+  if (!authState.token) {
+    alert("Please log in to save builds.");
+    return;
+  }
+
+  try {
+    const saved = await saveBuildAPI(build, authState.token);
+    setSavedBuilds((prev) => [...prev, saved]);
+    alert("✅ Build saved successfully!");
+  } catch (err) {
+    console.error("Save build failed:", err);
+    alert("❌ Failed to save build. Try again.");
+  }
+};
 
   const handleBackToBuilds = () => {
     setCurrentScreen('builds');
@@ -508,11 +519,14 @@ export default function App() {
           />
         )}
         {showSavedBuildsModal && (
-          <SavedBuildsModal
-            savedBuilds={savedBuilds}
+           <SavedBuildsModal
+            isOpen={showSavedBuildsModal}
             onClose={() => setShowSavedBuildsModal(false)}
+            savedBuilds={savedBuilds}
+            onSelectBuild={handleBuildSelect}   // ✅ required by props
           />
         )}
+
         {showProfileModal && authState.user && (
           <ProfileModal
             isOpen={showProfileModal}
