@@ -68,44 +68,17 @@ export default function RegisterShopModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
   if (!validateForm()) return;
+  onSubmit({
+    shop_name: form.shopName.trim(),
+    contact: form.phone.trim(),
+    city: form.city.trim(),
+    address: form.address.trim(),
+  });
+  onClose();
+};
 
-  setIsLoading(true);
-  try {
-    const newShop = await registerShop({
-      shop_name: form.shopName.trim(),
-      contact: form.phone.trim(),
-      city: form.city.trim(),
-      address: form.address.trim(),
-    });
-
-    onSubmit(newShop); // Pass created shop with real backend ID
-
-    // Reset form
-    setForm({
-      shopName: "",
-      phone: "",
-      city: "",
-      address: "",
-    });
-
-    onClose();
-  } catch (error: any) {
-    // Handle 400 from backend
-    if (error.response?.status === 400) {
-      setErrors({
-        general: error.response.data.detail || "You already have a shop registered.",
-      });
-    } else {
-      setErrors({
-        general: "Failed to register shop. Please try again.",
-      });
-    }
-  } finally {
-    setIsLoading(false);
-  }
- };
 
  const handleClose = () => {
   if (!isLoading) {
