@@ -63,32 +63,29 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) {
-      setErrors(['Please select a file first']);
-      return;
-    }
+  if (!selectedFile) {
+    setErrors(['Please select a file first']);
+    return;
+  }
 
-    setIsUploading(true);
-    setErrors([]);
+  setIsUploading(true);
+  setErrors([]);
 
-    try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('vendorId', vendor.id.toString());
+  try {
+    const result = await uploadInventory(vendor.id, selectedFile, localStorage.getItem("access_token"));
+    setUploadResult(result);
 
-      const result = await uploadInventory(formData); // ✅ send to backend
-      setUploadResult(result);
+    setTimeout(() => {
+      onInventoryUploaded();
+    }, 2000);
 
-      setTimeout(() => {
-        onInventoryUploaded();
-      }, 2000);
-
-    } catch (error: any) {
-      setErrors([error.message || 'Failed to upload inventory. Please try again.']);
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  } catch (error: any) {
+    console.error('Upload failed:', error);
+    setErrors([error.message || 'Failed to upload inventory. Please try again.']);
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const handleClose = () => {
     if (!isUploading) {

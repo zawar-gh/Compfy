@@ -175,6 +175,44 @@ export default function App() {
     setSavedBuilds([]);
   };
 
+ 
+// --------- Restore Auth State on App Load ----------
+useEffect(() => {
+  const restoreAuth = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    try {
+      // Fetch current logged-in user and vendor info
+      const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch user");
+
+      const data = await res.json();
+      const vendor =
+        Array.isArray(data.vendor) ? data.vendor[0] : data.vendor || null;
+
+      setAuthState({
+        isAuthenticated: true,
+        user: data.user || null,
+        vendor, // handle list if backend returns array
+        token,
+      });
+
+      // Navigate based on whether vendor exists
+      setCurrentScreen(vendor ? "vendor-dashboard" : "role-selection");
+    } catch (err) {
+      console.error("Auth restore failed:", err);
+      localStorage.removeItem("access_token");
+    }
+  };
+
+  restoreAuth();
+}, []);
+
+
   // Role selection
   const handleRoleSelect = (role: UserRole) => {
     if (role === 'customer') {
