@@ -76,9 +76,7 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
           </div>
         )}
         
-        <p className="text-gray-300">
-          Manage your inventory and reach more customers through Compfy
-        </p>
+        
       </motion.div>
 
       {/* Dashboard Actions */}

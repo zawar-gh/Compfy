@@ -29,7 +29,8 @@ import { signup, login } from './api/auth';
 import { categories } from './data/mockData';
 import { registerShop } from './services/api';
 import { saveBuild as saveBuildAPI, getSavedBuilds } from "./api/savedBuilds";
-
+import ProfileModal from './components/ProfileModal';
+import toast from 'react-hot-toast';
 
 
 type AppScreen =
@@ -101,69 +102,35 @@ export default function App() {
   // ------------------- HANDLERS -------------------
 
   // Authentication
-  const handleLogin = (user: User, token: string) => {
-    localStorage.setItem("access_token", token);
+  const handleLogin = async (user: User, token: string) => {
+  localStorage.setItem("access_token", token);
+
+   try {
+    // Fetch full user info from backend
+    const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    const vendor = Array.isArray(data.vendor) ? data.vendor[0] : data.vendor || null;
+
     setAuthState({
       isAuthenticated: true,
-      user,
-      vendor: null,
+      user: data.user || user, // fallback to passed user
+      vendor,
       token,
     });
-    setShowAuthModal(false);
-    setCurrentScreen('role-selection');
-    
-    getSavedBuilds(token)
-    .then((data) => setSavedBuilds(data))
-    .catch((err) => console.error("Failed to load saved builds:", err));
 
-  };
-
-  const handleSignup = async () => {
-  if (!signupForm.username || !signupForm.password || !signupForm.email) {
-    setErrors({ general: "All fields required" });
-    return;
-  }
-
-  setIsLoading(true);
-  try {
-    const response = await fetch(`${API_BASE}/auth/signup/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: signupForm.username,
-        email: signupForm.email,
-        password: signupForm.password,
-        role: signupForm.role,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      const messages = Object.values(data).flat().join(" ");
-      setErrors({ general: messages || "Signup failed" });
-      return;
+    if (vendor) {
+      setCurrentScreen("vendor-dashboard");
+    } else {
+      setCurrentScreen("role-selection");
     }
-
-    const token = data.access;
-    const user: UserType = {
-      id: data.user?.id || data.id,
-      username: data.user?.username || data.username,
-      email: data.user?.email || data.email,
-      address: '',
-      createdAt: '',
-    };
-
-    localStorage.setItem("token", token);
-    onSignup(user, token);
-    onClose();
-   } catch (err) {
-    setErrors({ general: "Signup failed. Please try again." });
-   } finally {
-    setIsLoading(false);
-   }
- };
-
+  } catch (err) {
+    console.error("Login fetch failed:", err);
+    toast.error("Failed to log in. Try again.");
+  }
+  } ;
+  
 
   const handleLogout = () => {
     setAuthState({ isAuthenticated: false, user: null, vendor: null, token: null });
@@ -202,7 +169,7 @@ useEffect(() => {
       });
 
       // Navigate based on whether vendor exists
-      setCurrentScreen(vendor ? "vendor-dashboard" : "role-selection");
+      setCurrentScreen("role-selection");
     } catch (err) {
       console.error("Auth restore failed:", err);
       localStorage.removeItem("access_token");
@@ -230,10 +197,10 @@ useEffect(() => {
   try {
     const registeredVendor = await registerShop(shopData, authState.token);
     setAuthState((prev) => ({ ...prev, vendor: registeredVendor }));
-    alert('✅ Shop registered successfully!');
+    toast.success('Shop registered successfully!');
   } catch (err: any) {
     console.error('Shop registration failed', err.response || err);
-    alert('❌ Failed to register shop. Check console for details.');
+    toast.error('Failed to register shop.');
   }
  };
 
@@ -381,7 +348,7 @@ useEffect(() => {
       </div>
 
       {/* Header */}
-      {authState.isAuthenticated && currentScreen !== 'selection' && currentScreen !== 'role-selection' && currentScreen !== 'auth' && (
+      {authState.isAuthenticated && currentScreen !== 'auth' && (
         <Header
           authState={authState}
           savedBuilds={savedBuilds}
@@ -394,21 +361,21 @@ useEffect(() => {
         />
       )}
 
-      {(currentScreen === 'selection' || currentScreen === 'auth' || currentScreen === 'role-selection') && (
-        <motion.header
-          className="text-center py-8"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6">
-            Compfy
-          </h1>
-          <p className={`text-xl ${getTextColorClasses()}`}>
-            Build Your PC with Comfort
-          </p>
-        </motion.header>
-      )}
+      {(currentScreen === 'auth' || currentScreen === 'role-selection') && (
+  <motion.header
+    className="text-center py-3"
+    initial={{ opacity: 0, y: -50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+  >
+    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6">
+      Compfy
+    </h1>
+    <p className="text-xl text-gray-300">
+      Build your PC Comfortably
+    </p>
+  </motion.header>
+)}
 
       {/* Screens */}
       <AnimatePresence mode="wait">
@@ -530,6 +497,7 @@ useEffect(() => {
            transition={{ duration: 0.5, ease: 'easeInOut' }}
          >
            <VendorDashboard
+            
              vendor={authState.vendor}
              onRegisterShop={handleRegisterShop}
              onBackToSelection={handleBackToRoleSelection} // <-- pass handler here
@@ -553,7 +521,7 @@ useEffect(() => {
             isOpen={showAuthModal}
             onClose={() => setShowAuthModal(false)}
             onLogin={handleLogin}
-            onSignup={handleSignup}
+              onSignup={(user, token) => handleLogin(user, token)}
           />
         )}
         {showSavedBuildsModal && (
