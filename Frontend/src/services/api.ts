@@ -58,3 +58,28 @@ export const uploadInventory = async (vendorId: number, file: File, token?: stri
   });
   return res.data;
 };
+
+// Log every request (useful for debugging in DevTools / console)
+axios.interceptors.request.use((request) => {
+    console.log("➡️ API Request:");
+    console.log("URL     :", request.url);
+    console.log("Method  :", request.method?.toUpperCase());
+    console.log("Headers :", request.headers);
+    console.log("Data    :", request.data);
+    return request;
+}, (error) => {
+    console.error("Request error:", error);
+    return Promise.reject(error);
+});
+
+// Log every response
+axios.interceptors.response.use((response) => {
+    console.log("✅ API Response:");
+    console.log("URL     :", response.config.url);
+    console.log("Status  :", response.status);
+    console.log("Data    :", response.data);
+    return response;
+}, (error) => {
+    console.error("❌ API Response Error:", error.response?.status, error.response?.data);
+    return Promise.reject(error);
+});
