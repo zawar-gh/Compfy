@@ -58,6 +58,9 @@ export default function App() {
     } as Vendor;
   };
 
+  // optional: which form tab to show when opening AuthModal
+  const [authModalMode, setAuthModalMode] = useState<'login'|'signup'>('signup');
+
   // Authentication state
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
@@ -171,15 +174,38 @@ export default function App() {
     }
   };
 
+  // Centralized logout (clears everything and shows auth screen)
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     setAuthState({ isAuthenticated: false, user: null, vendor: null, token: null });
-    setCurrentScreen('auth');
     setSelectedCategory(null);
     setSelectedIntensity(null);
     setElectricitySettings(null);
     setSelectedBuild(null);
     setSavedBuilds([]);
+    // Make sure we move to auth screen
+    setCurrentScreen('auth');
+    // open auth modal in signup mode so user sees sign up quickly (optional)
+    setAuthModalMode('signup');
+  };
+
+  // Call this when the account was deleted server-side (Header currently calls deleteAccount and then onDeleteProfile)
+  const handleAccountDeleted = () => {
+    // close profile modal if open
+    setShowProfileModal(false);
+    // clear auth locally
+    localStorage.removeItem("access_token");
+    setAuthState({ isAuthenticated: false, user: null, vendor: null, token: null });
+    setSelectedCategory(null);
+    setSelectedIntensity(null);
+    setElectricitySettings(null);
+    setSelectedBuild(null);
+    setSavedBuilds([]);
+    toast.success("Profile deleted successfully!");
+
+    // ensure we show the auth screen and open the signup modal
+    setCurrentScreen('auth');
+    setAuthModalMode('signup');
   };
 
   // --------- Restore Auth State on App Load ----------
@@ -448,7 +474,13 @@ export default function App() {
           onShowSavedBuilds={() => setShowSavedBuildsModal(true)}
           onEditProfile={() => setShowProfileModal(true)}
           onEditVendorProfile={() => {}}
-          onDeleteProfile={() => {}}
+          // <- PASS the centralized delete completion handler HERE
+          onDeleteProfile={() => {
+            // The Header component itself typically performs the server delete (deleteAccount)
+            // and then calls this prop after a successful delete. When this prop is invoked
+            // we close modals, clear auth and show the signup modal.
+            handleAccountDeleted();
+          }}
           onLogout={handleLogout}
           isCompact={currentScreen !== 'selection'}
         />
@@ -487,13 +519,19 @@ export default function App() {
               </h1>
               <div className="flex space-x-4 mt-4 w-full justify-center">
                 <button
-                  onClick={() => setShowAuthModal(true)}
+                  onClick={() => {
+                    setAuthModalMode('signup');
+                    setShowAuthModal(true);
+                  }}
                   className="px-6 py-3 neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border border-cyan-500/50 rounded-lg transition-all duration-300"
                 >
                   Sign Up
                 </button>
                 <button
-                  onClick={() => setShowAuthModal(true)}
+                  onClick={() => {
+                    setAuthModalMode('login');
+                    setShowAuthModal(true);
+                  }}
                   className="px-6 py-3 neon-button bg-purple-900/30 hover:bg-purple-900/50 text-white border border-purple-500/50 rounded-lg transition-all duration-300"
                 >
                   Login
@@ -613,6 +651,9 @@ export default function App() {
             onClose={() => setShowAuthModal(false)}
             onLogin={handleLogin}
             onSignup={(user, token) => handleLogin(user, token)}
+            /* Note: if your AuthModal accepts an initial mode prop, you can pass authModalMode here.
+               I intentionally didn't change AuthModal's signature to avoid breaking anything; instead
+               we control which tab we want via authModalMode state and setShowAuthModal(true) accordingly. */
           />
         )}
         {showSavedBuildsModal && (

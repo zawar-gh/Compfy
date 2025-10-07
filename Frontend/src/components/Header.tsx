@@ -1,3 +1,4 @@
+// src/components/Header.tsx
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { 
@@ -18,12 +19,14 @@ import {
   DropdownMenuTrigger 
 } from './ui/dropdown-menu';
 import { AuthState, SavedBuild } from '../types';
-import ProfileModal from './ProfileModal'; // Import the modal
+import { deleteAccount } from "../api/auth";
+import toast from 'react-hot-toast'; // if not already imported
 
 interface HeaderProps {
   authState: AuthState;
   savedBuilds: SavedBuild[];
   onShowSavedBuilds: () => void;
+  onEditProfile: () => void;        // <-- added
   onDeleteProfile: () => void;
   onEditVendorProfile: () => void;
   onLogout: () => void;
@@ -34,13 +37,14 @@ export default function Header({
   authState, 
   savedBuilds,
   onShowSavedBuilds,
+  onEditProfile,
   onEditVendorProfile,
   onDeleteProfile,
   onLogout,
   isCompact = false 
 }: HeaderProps) {
   const { isAuthenticated, user, vendor } = authState;
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  // Removed the header-local profile modal state — App will control profile modal now
 
   if (!isAuthenticated || !user) {
     return null;
@@ -82,8 +86,9 @@ export default function Header({
                 <p className="text-xs text-gray-400 uppercase tracking-wider">User Settings</p>
               </div>
               
+              {/* Use the App-level onEditProfile handler */}
               <DropdownMenuItem 
-                onClick={() => setShowProfileModal(true)}
+                onClick={onEditProfile}
                 className="text-gray-300 hover:text-white hover:bg-cyan-900/30 cursor-pointer"
               >
                 <User className="w-4 h-4 mr-2" />
@@ -91,7 +96,19 @@ export default function Header({
               </DropdownMenuItem>
               
               <DropdownMenuItem 
-                onClick={onDeleteProfile}
+                onClick={async () => {
+                  if (!authState.token) return;
+                  const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
+                  if (!confirmed) return;
+                  try {
+                    await deleteAccount(authState.token);
+                    toast.success("Your account has been deleted.");
+                    onDeleteProfile(); // App will clear state and open auth modal
+                  } catch (err) {
+                    toast.error("Failed to delete account. Please try again.");
+                    console.error(err);
+                  }
+                }}
                 className="text-red-400 hover:text-red-300 hover:bg-red-900/30 cursor-pointer"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
@@ -157,16 +174,6 @@ export default function Header({
           </DropdownMenu>
         </div>
       </motion.header>
-
-      {/* Profile Modal */}
-      {showProfileModal && user && (
-        <ProfileModal
-          isOpen={showProfileModal}
-          onClose={() => setShowProfileModal(false)}
-          user={user}
-          onLogout={onLogout}
-        />
-      )}
     </>
   );
 }

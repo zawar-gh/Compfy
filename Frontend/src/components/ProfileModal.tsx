@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { User } from '../types';
+import { useNavigate } from 'react-router-dom'; // ✅ add this line
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -12,6 +13,14 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ isOpen, onClose, user, onLogout }: ProfileModalProps) {
+  const navigate = useNavigate(); // ✅ add this line
+
+  const handleLogout = () => {
+    onLogout();
+    onClose();
+    navigate('/auth'); // ✅ redirect to your signup/login screen (change path if needed)
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-transparent p-0 shadow-none">
@@ -37,10 +46,7 @@ export default function ProfileModal({ isOpen, onClose, user, onLogout }: Profil
           </div>
 
           <Button
-            onClick={() => {
-              onLogout();
-              onClose();
-            }}
+            onClick={handleLogout} // ✅ use new function
             className="bg-red-600 hover:bg-red-700 w-full"
           >
             Logout
