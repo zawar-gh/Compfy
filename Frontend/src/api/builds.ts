@@ -11,16 +11,19 @@ export async function getBuilds(): Promise<PCBuild[]> {
   const data = await response.json();
 
   // 🔥 Normalize backend response so UI doesn't crash
-  return data.map((build: any) => ({
+    return data.map((build: any) => ({
     id: build.id,
-    name: build.name,
-    totalCost: Number(build.totalCost), // backend gives string → convert to number
+    name: build.name || 'N/A',
+    totalCost: Number(build.totalCost) || 0,
     estimatedWattage: build.estimatedWattage || 0,
-    components: build.components || {},
-
-    // fallback values (since backend doesn’t send them)
-    category: build.category || "gaming",     // default to gaming
-    intensity: build.intensity || "casual",  // default to casual
+    components: {
+      cpu: { name: build.components?.cpu?.name || 'N/A' },
+      gpu: { name: build.components?.gpu?.name || 'N/A' },
+      ram: { name: build.components?.ram?.name || 'N/A' },
+      storage: { name: build.components?.storage?.name || 'N/A' }
+    },
+    category: build.category || 'gaming',
+    intensity: build.intensity || 'casual',
     isActive: build.isActive ?? true
   }));
 }

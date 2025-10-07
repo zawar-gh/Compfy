@@ -31,7 +31,7 @@ import { registerShop } from './services/api';
 import { saveBuild as saveBuildAPI, getSavedBuilds } from "./api/savedBuilds";
 import ProfileModal from './components/ProfileModal';
 import toast from 'react-hot-toast';
-
+// removed unused getShops import to avoid confusion
 
 type AppScreen =
   | 'auth'
@@ -43,6 +43,21 @@ type AppScreen =
   | 'vendor-dashboard';
 
 export default function App() {
+  // ------ normalize helper ------
+  const normalizeVendor = (v: any): Vendor | null => {
+    if (!v) return null;
+    return {
+      id: v.id ?? null,
+      userId: v.user ?? v.user_id ?? null,
+      shopName: v.shop_name ?? v.shopName ?? "",
+      city: v.city ?? "",
+      phone: v.contact ?? v.phone ?? "",
+      address: v.address ?? "",
+      createdAt: v.created_at ?? null,
+      updatedAt: v.updated_at ?? null,
+    } as Vendor;
+  };
+
   // Authentication state
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
@@ -70,69 +85,94 @@ export default function App() {
   const [savedBuilds, setSavedBuilds] = useState<SavedBuild[]>([]);
 
   // Fetch builds from backend
- useEffect(() => {
-   getBuilds()
-    .then((data) => {
-      const normalized = data.map((b: any, i: number) => {
-        const category =
-          typeof b.category === "string"
-            ? { id: b.category, name: b.category }
-            : b.category ?? { id: i % 2 === 0 ? "gaming" : "office", name: "Unknown" };
+  useEffect(() => {
+    getBuilds()
+      .then((data) => {
+        const normalized = data.map((b: any, i: number) => {
+          const category =
+            typeof b.category === "string"
+              ? { id: b.category, name: b.category }
+              : b.category ?? { id: i % 2 === 0 ? "gaming" : "office", name: "Unknown" };
 
-        const intensity =
-          typeof b.intensity === "string"
-            ? { id: b.intensity, name: b.intensity }
-            : b.intensity ?? { id: "casual", name: "Casual" };
+          const intensity =
+            typeof b.intensity === "string"
+              ? { id: b.intensity, name: b.intensity }
+              : b.intensity ?? { id: "casual", name: "Casual" };
 
-        return {
-          ...b,
-          category,
-          intensity,
-          isActive: b.isActive ?? true,
-        } as PCBuild;
+          return {
+            ...b,
+            category,
+            intensity,
+            isActive: b.isActive ?? true,
+          } as PCBuild;
+        });
+        setBuilds(normalized);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch builds:", err);
+        setError("Could not load builds. Check backend and API response.");
       });
-      setBuilds(normalized);
-    })
-    .catch((err) => {
-      console.error("Failed to fetch builds:", err);
-      setError("Could not load builds. Check backend and API response.");
-    });
   }, []);
 
   // ------------------- HANDLERS -------------------
 
-  // Authentication
+  // Authentication: handleLogin
   const handleLogin = async (user: User, token: string) => {
-  localStorage.setItem("access_token", token);
+    // persist token
+    localStorage.setItem("access_token", token);
 
-   try {
-    // Fetch full user info from backend
-    const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-    const vendor = Array.isArray(data.vendor) ? data.vendor[0] : data.vendor || null;
+    try {
+      // Fetch full user info from backend
+      const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch user");
+      const data = await res.json();
 
-    setAuthState({
-      isAuthenticated: true,
-      user: data.user || user, // fallback to passed user
-      vendor,
-      token,
-    });
+      // Try to fetch the vendor for logged-in user using dedicated endpoint
+      let vendorRaw: any = null;
+      try {
+        const vendorRes = await fetch("http://127.0.0.1:8000/api/vendor/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (vendorRes.ok) {
+          vendorRaw = await vendorRes.json();
+          // If API returns an array, find the one for current user
+          if (Array.isArray(vendorRaw)) {
+            vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === data.user.id) || null;
+          }
+        } else {
+          // fallback: use vendor info from /users/current/ if present
+          vendorRaw = Array.isArray(data.vendor) ? data.vendor[0] : data.vendor || null;
+        }
+      } catch (e) {
+        // fallback to whatever /users/current/ provided
+        vendorRaw = Array.isArray(data.vendor) ? data.vendor[0] : data.vendor || null;
+      }
 
-    if (vendor) {
-      setCurrentScreen("vendor-dashboard");
-    } else {
-      setCurrentScreen("role-selection");
+      const vendor = normalizeVendor(vendorRaw);
+
+      setAuthState({
+        isAuthenticated: true,
+        user: data.user || user,
+        vendor,
+        token,
+      });
+
+      // Navigate depending on vendor presence
+      if (vendor) {
+        setCurrentScreen("vendor-dashboard");
+      } else {
+        setCurrentScreen("role-selection");
+      }
+    } catch (err) {
+      console.error("Login fetch failed:", err);
+      toast.error("Failed to log in. Try again.");
     }
-  } catch (err) {
-    console.error("Login fetch failed:", err);
-    toast.error("Failed to log in. Try again.");
-  }
-  } ;
-  
+  };
 
   const handleLogout = () => {
+    localStorage.removeItem("access_token");
     setAuthState({ isAuthenticated: false, user: null, vendor: null, token: null });
     setCurrentScreen('auth');
     setSelectedCategory(null);
@@ -142,43 +182,60 @@ export default function App() {
     setSavedBuilds([]);
   };
 
- 
-// --------- Restore Auth State on App Load ----------
-useEffect(() => {
-  const restoreAuth = async () => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
+  // --------- Restore Auth State on App Load ----------
+  useEffect(() => {
+    const restoreAuth = async () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) return;
 
-    try {
-      // Fetch current logged-in user and vendor info
-      const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      try {
+        // Fetch current logged-in user
+        const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch user");
+        const data = await res.json();
 
-      if (!res.ok) throw new Error("Failed to fetch user");
+        // Fetch the vendor tied to this user using dedicated endpoint
+        let vendorRaw: any = null;
+        try {
+          const vendorRes = await fetch("http://127.0.0.1:8000/api/vendor/", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (vendorRes.ok) {
+            vendorRaw = await vendorRes.json();
+            if (Array.isArray(vendorRaw)) {
+              vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === data.user.id) || null;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to fetch /api/vendor/:", e);
+        }
 
-      const data = await res.json();
-      const vendor =
-        Array.isArray(data.vendor) ? data.vendor[0] : data.vendor || null;
+        const vendor = normalizeVendor(vendorRaw);
 
-      setAuthState({
-        isAuthenticated: true,
-        user: data.user || null,
-        vendor, // handle list if backend returns array
-        token,
-      });
+        setAuthState({
+          isAuthenticated: true,
+          user: data.user || null,
+          vendor,
+          token,
+        });
 
-      // Navigate based on whether vendor exists
-      setCurrentScreen("role-selection");
-    } catch (err) {
-      console.error("Auth restore failed:", err);
-      localStorage.removeItem("access_token");
-    }
-  };
+        // Navigate depending on vendor presence
+        if (vendor) {
+          setCurrentScreen("vendor-dashboard");
+        } else {
+          setCurrentScreen("role-selection");
+        }
+      } catch (err) {
+        console.error("Auth restore failed:", err);
+        localStorage.removeItem("access_token");
+      }
+    };
 
-  restoreAuth();
-}, []);
-
+    restoreAuth();
+    // run once on mount
+  }, []);
 
   // Role selection
   const handleRoleSelect = (role: UserRole) => {
@@ -189,22 +246,57 @@ useEffect(() => {
     }
   };
 
-
   // Vendor registration
- const handleRegisterShop = async (shopData: Omit<Vendor, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
-  if (!authState.user || !authState.token) return;
+  const handleRegisterShop = async (
+    shopData: Omit<Vendor, "id" | "userId" | "createdAt" | "updatedAt">
+  ) => {
+    if (!authState.user) {
+      toast.error("You must be logged in to register a shop.");
+      return;
+    }
+    const token = authState.token ?? localStorage.getItem("access_token");
+    if (!token) {
+      toast.error("Missing auth token.");
+      return;
+    }
 
-  try {
-    const registeredVendor = await registerShop(shopData, authState.token);
-    setAuthState((prev) => ({ ...prev, vendor: registeredVendor }));
-    toast.success('Shop registered successfully!');
-  } catch (err: any) {
-    console.error('Shop registration failed', err.response || err);
-    toast.error('Failed to register shop.');
-  }
- };
+    try {
+      const payload = {
+        ...shopData,
+        user: authState.user.id, // attach user link (safe)
+      };
 
+      const registeredVendor = await registerShop(payload, token);
 
+      // Normalize vendor fields (registeredVendor may be raw Django JSON)
+      // If backend returns the vendor created, normalize; else attempt to fetch /api/vendor/
+      let vendorRaw = registeredVendor;
+      if (!vendorRaw || !vendorRaw.id) {
+        try {
+          const vendorRes = await fetch("http://127.0.0.1:8000/api/vendor/", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (vendorRes.ok) {
+            vendorRaw = await vendorRes.json();
+            if (Array.isArray(vendorRaw)) {
+              vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === authState.user!.id) || vendorRaw;
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to refetch vendor after register:", e);
+        }
+      }
+
+      const vendor = normalizeVendor(vendorRaw);
+
+      setAuthState((prev) => ({ ...prev, vendor, token }));
+      toast.success("Shop registered successfully!");
+      setCurrentScreen("vendor-dashboard");
+    } catch (err: any) {
+      console.error("Shop registration failed:", err?.response || err);
+      toast.error("Failed to register shop.");
+    }
+  };
 
   // PC building flows
   const handleCategoryIntensitySelect = (category: CategoryType, intensity: IntensityType) => {
@@ -225,20 +317,21 @@ useEffect(() => {
   };
 
   const handleSaveBuild = async (build: PCBuild) => {
-  if (!authState.token) {
-    alert("Please log in to save builds.");
-    return;
-  }
+    const token = authState.token ?? localStorage.getItem("access_token");
+    if (!token) {
+      alert("Please log in to save builds.");
+      return;
+    }
 
-  try {
-    const saved = await saveBuildAPI(build, authState.token);
-    setSavedBuilds((prev) => [...prev, saved]);
-    alert("✅ Build saved successfully!");
-  } catch (err) {
-    console.error("Save build failed:", err);
-    alert("❌ Failed to save build. Try again.");
-  }
-};
+    try {
+      const saved = await saveBuildAPI(build, token);
+      setSavedBuilds((prev) => [...prev, saved]);
+      alert("✅ Build saved successfully!");
+    } catch (err) {
+      console.error("Save build failed:", err);
+      alert("❌ Failed to save build. Try again.");
+    }
+  };
 
   const handleBackToBuilds = () => {
     setCurrentScreen('builds');
@@ -272,8 +365,7 @@ useEffect(() => {
     );
   };
 
-
-  // Theme
+  // Theme helpers
   const getThemeClasses = () => 'bg-gradient-to-br from-slate-900 via-gray-900 to-black';
   const getTextColorClasses = () => 'text-gray-300';
 
@@ -296,6 +388,7 @@ useEffect(() => {
     if (!authState.isAuthenticated && currentScreen !== 'auth') {
       setCurrentScreen('auth');
     }
+    // intentionally depend on authState.isAuthenticated and currentScreen
   }, [authState.isAuthenticated, currentScreen]);
 
   if (error)
@@ -362,20 +455,20 @@ useEffect(() => {
       )}
 
       {(currentScreen === 'auth' || currentScreen === 'role-selection') && (
-  <motion.header
-    className="text-center py-3"
-    initial={{ opacity: 0, y: -50 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-  >
-    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6">
-      Compfy
-    </h1>
-    <p className="text-xl text-gray-300">
-      Build your PC Comfortably
-    </p>
-  </motion.header>
-)}
+        <motion.header
+          className="text-center py-3"
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6">
+            Compfy
+          </h1>
+          <p className="text-xl text-gray-300">
+            Build your PC Comfortably
+          </p>
+        </motion.header>
+      )}
 
       {/* Screens */}
       <AnimatePresence mode="wait">
@@ -489,22 +582,20 @@ useEffect(() => {
         )}
 
         {currentScreen === 'vendor-dashboard' && (
-         <motion.div
-           key="vendor-dashboard"
-           initial={{ opacity: 0, x: -100 }}
-           animate={{ opacity: 1, x: 0 }}
-           exit={{ opacity: 0, x: 100 }}
-           transition={{ duration: 0.5, ease: 'easeInOut' }}
-         >
-           <VendorDashboard
-            
-             vendor={authState.vendor}
-             onRegisterShop={handleRegisterShop}
-             onBackToSelection={handleBackToRoleSelection} // <-- pass handler here
-           />
+          <motion.div
+            key="vendor-dashboard"
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
+          >
+            <VendorDashboard
+              vendor={authState.vendor}
+              onRegisterShop={handleRegisterShop}
+              onBackToSelection={handleBackToRoleSelection}
+            />
           </motion.div>
         )}
-
       </AnimatePresence>
 
       {/* Modals */}
@@ -521,15 +612,15 @@ useEffect(() => {
             isOpen={showAuthModal}
             onClose={() => setShowAuthModal(false)}
             onLogin={handleLogin}
-              onSignup={(user, token) => handleLogin(user, token)}
+            onSignup={(user, token) => handleLogin(user, token)}
           />
         )}
         {showSavedBuildsModal && (
-           <SavedBuildsModal
+          <SavedBuildsModal
             isOpen={showSavedBuildsModal}
             onClose={() => setShowSavedBuildsModal(false)}
             savedBuilds={savedBuilds}
-            onSelectBuild={handleBuildSelect}   // ✅ required by props
+            onSelectBuild={handleBuildSelect}
           />
         )}
 
@@ -541,7 +632,6 @@ useEffect(() => {
             onLogout={handleLogout}
           />
         )}
-
       </AnimatePresence>
     </div>
   );

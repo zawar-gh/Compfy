@@ -53,29 +53,35 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
   // 🔹 Load vendor inventory from backend
   useEffect(() => {
   const fetchInventory = async () => {
-    try {
-      const response = await getInventory(vendor.id);
+  try {
+    const response = await getInventory(vendor.id);
+    const inventoryArray = response.data ?? response; // fallback to response itself
 
-      // Map backend response to EditableBuild
-      const mappedBuilds: EditableBuild[] = response.data.map((item: any) => ({
-        id: item.id,
-        name: item.build.title,
-        totalCost: item.build.price,
-        components: {
-          cpu: { name: item.build.cpu },
-          gpu: { name: item.build.gpu },
-          ram: { name: item.build.ram },
-          storage: { name: item.build.storage },
-        },
-        isEditing: false,
-        isSelected: false,
-      }));
-
-      setBuilds(mappedBuilds);
-    } catch (err) {
-      console.error("Failed to fetch inventory", err);
+    if (!Array.isArray(inventoryArray)) {
+      console.error("Inventory response is not an array:", response);
+      return;
     }
-  };
+
+    const mappedBuilds: EditableBuild[] = inventoryArray.map((item: any) => ({
+      id: item.id,
+      name: item.build?.title || "Untitled Build",
+      totalCost: item.build?.price || 0,
+      components: {
+        cpu: { name: item.build?.cpu || "N/A" },
+        gpu: { name: item.build?.gpu || "N/A" },
+        ram: { name: item.build?.ram || "N/A" },
+        storage: { name: item.build?.storage || "N/A" },
+      },
+      isEditing: false,
+      isSelected: false,
+    }));
+
+    setBuilds(mappedBuilds);
+  } catch (err) {
+    console.error("Failed to fetch inventory", err);
+  }
+};
+
 
   fetchInventory();
   }, [vendor.id]);
