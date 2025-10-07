@@ -62,15 +62,15 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
       return;
     }
 
-    const mappedBuilds: EditableBuild[] = inventoryArray.map((item: any) => ({
+    const mappedBuilds = inventoryArray.map((item: any) => ({
       id: item.id,
-      name: item.build?.title || "Untitled Build",
-      totalCost: item.build?.price || 0,
+      name: item.name, // Changed from item.build?.title
+      totalCost: item.totalCost, // Changed from item.build?.price
       components: {
-        cpu: { name: item.build?.cpu || "N/A" },
-        gpu: { name: item.build?.gpu || "N/A" },
-        ram: { name: item.build?.ram || "N/A" },
-        storage: { name: item.build?.storage || "N/A" },
+        cpu: { name: item.components.cpu || "N/A" }, // Changed from item.build?.cpu
+        gpu: { name: item.components.gpu || "N/A" }, // Changed from item.build?.gpu
+        ram: { name: item.components.ram || "N/A" }, // Changed from item.build?.ram
+        storage: { name: item.components.storage || "N/A" }, // Changed from item.build?.storage
       },
       isEditing: false,
       isSelected: false,
@@ -551,4 +551,16 @@ function BuildRow({
       </td>
     </tr>
   );
+}
+
+interface InventoryItem {
+  id: number;
+  name: string;
+  totalCost: string;
+  components: {
+    cpu: string;
+    gpu: string;
+    ram: string;
+    storage: string;
+  }
 }

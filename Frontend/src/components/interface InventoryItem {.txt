@@ -1,0 +1,11 @@
+interface InventoryItem {
+  id: number;
+  name: string;
+  totalCost: string;
+  components: {
+    cpu: string;
+    gpu: string;
+    ram: string;
+    storage: string;
+  }
+}
