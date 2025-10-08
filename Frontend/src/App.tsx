@@ -164,7 +164,7 @@ export default function App() {
 
       // Navigate depending on vendor presence
       if (vendor) {
-        setCurrentScreen("vendor-dashboard");
+        setCurrentScreen("role-selection");
       } else {
         setCurrentScreen("role-selection");
       }
@@ -249,7 +249,7 @@ export default function App() {
 
         // Navigate depending on vendor presence
         if (vendor) {
-          setCurrentScreen("vendor-dashboard");
+          setCurrentScreen("role-selection");
         } else {
           setCurrentScreen("role-selection");
         }

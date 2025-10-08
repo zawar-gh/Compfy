@@ -143,7 +143,7 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
           </Card>
         </motion.div>
 
-        {/* Add Inventory */}
+        {/* Upload Inventory */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -157,7 +157,7 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg text-white">
                 <Upload className={`w-5 h-5 ${isShopRegistered ? 'text-purple-400' : 'text-gray-400'}`} />
-                Add Inventory
+                Upload Inventory
                 {!isShopRegistered && (
                   <AlertCircle className="w-4 h-4 text-yellow-400 ml-auto" />
                 )}
@@ -186,7 +186,7 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
                     : 'bg-gray-700/30 text-gray-500 border-gray-600/30 cursor-not-allowed'
                 }`}
               >
-                {isShopRegistered ? 'Manage Inventory' : 'Register Shop First'}
+                {isShopRegistered ? 'Add Inventory' : 'Register Shop First'}
               </Button>
             </CardContent>
           </Card>
@@ -206,7 +206,7 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg text-white">
                 <List className={`w-5 h-5 ${isShopRegistered ? 'text-blue-400' : 'text-gray-400'}`} />
-                Check Inventory
+                Manage Inventory
                 {!isShopRegistered && (
                   <AlertCircle className="w-4 h-4 text-yellow-400 ml-auto" />
                 )}
