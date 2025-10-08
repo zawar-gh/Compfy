@@ -271,14 +271,7 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
               </Button>
             )}
             
-            <Button
-              onClick={() => setShowDeleteAllDialog(true)}
-              variant="outline"
-              className="flex items-center gap-2 text-red-400 hover:text-red-300 border-red-500/30 hover:border-red-400 bg-transparent hover:bg-red-900/20"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete All
-            </Button>
+           
           </div>
         </div>
 
@@ -311,26 +304,39 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
         <Card className="cyber-card shadow-[0_0_15px_rgba(147,51,234,0.4),_0_0_30px_rgba(147,51,234,0.2)] border-purple-500/50">
           <CardHeader className="pb-4">
   <CardTitle className="flex items-center justify-between">
-    <span className="text-white">Inventory Table</span>
+  <span className="text-white">Inventory Table</span>
 
-    <div className="flex items-center gap-3">
-      <Button
-        onClick={handleAddBuild}
-        className="flex items-center gap-2 neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-300 border-cyan-500/50"
-      >
-        <span className="text-lg leading-none">+</span>
-        Add Build
-      </Button>
+  <div className="flex items-center gap-3">
+    {/* ➕ Add Build Button */}
+    <Button
+      onClick={handleAddBuild}
+      className="flex items-center gap-2 neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-300 border-cyan-500/50"
+    >
+      <span className="text-lg leading-none">+</span>
+      Add Build
+    </Button>
 
-      <div className="flex items-center gap-2">
-        <Checkbox
-          checked={builds.length > 0 && builds.every(build => build.isSelected)}
-          onCheckedChange={handleSelectAll}
-        />
-        <span className="text-sm text-gray-300">Select All</span>
-      </div>
+    {/* 🗑️ Delete All Button (moved here) */}
+    <Button
+      onClick={() => setShowDeleteAllDialog(true)}
+      variant="outline"
+      className="flex items-center gap-2 text-red-400 hover:text-red-300 border-red-500/30 hover:border-red-400 bg-transparent hover:bg-red-900/20"
+    >
+      <Trash2 className="w-4 h-4" />
+      Delete All
+    </Button>
+
+    {/* ☑️ Select All */}
+    <div className="flex items-center gap-2">
+      <Checkbox
+        checked={builds.length > 0 && builds.every(build => build.isSelected)}
+        onCheckedChange={handleSelectAll}
+      />
+      <span className="text-sm text-gray-300">Select All</span>
     </div>
-  </CardTitle>
+  </div>
+</CardTitle>
+
 </CardHeader>
 
           <CardContent>
