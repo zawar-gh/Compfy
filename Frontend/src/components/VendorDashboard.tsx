@@ -101,8 +101,8 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
             <CardContent className="space-y-4">
               <p className="text-gray-300 text-sm">
                 {isShopRegistered 
-                  ? 'Your shop is registered and ready to accept inventory.'
-                  : 'Register your shop details to start selling on Compfy.'}
+                  ? 'Your shop is registered on Compfy'
+                  : 'Register your shop'}
               </p>
               
               {isShopRegistered ? (
@@ -166,7 +166,7 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
             <CardContent className="space-y-4">
               <p className="text-gray-300 text-sm">
                 {isShopRegistered 
-                  ? 'Upload your PC builds using our Excel template.'
+                  ? 'Upload your PC builds through Excel Sheet.'
                   : 'Register your shop first to upload inventory.'}
               </p>
               
@@ -174,7 +174,6 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
                 <li>• Download Excel template</li>
                 <li>• Fill in your PC builds</li>
                 <li>• Upload and validate data</li>
-                <li>• Instant inventory update</li>
               </ul>
               
               <Button
@@ -215,14 +214,13 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
             <CardContent className="space-y-4">
               <p className="text-gray-300 text-sm">
                 {isShopRegistered 
-                  ? 'View and edit your current inventory in a spreadsheet-like interface.'
+                  ? 'View and edit your current inventory.'
                   : 'Register your shop first to manage inventory.'}
               </p>
               
               <ul className="text-sm text-gray-400 space-y-1">
                 <li>• View all your builds</li>
                 <li>• Edit prices and details</li>
-                <li>• Sort and filter options</li>
                 <li>• Bulk delete operations</li>
               </ul>
               

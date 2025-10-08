@@ -171,36 +171,54 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
   };
 
   
+//------Adding Builds Button--------
+ const handleAddBuild = () => {
+  const newBuild: EditableBuild = {
+    id: `temp-${Date.now()}`, // temporary unique id
+    name: "New Build",
+    totalCost: 0,
+    components: {
+      cpu: { name: "" },
+      gpu: { name: "" },
+      ram: { name: "" },
+      storage: { name: "" },
+    },
+    isEditing: true,
+    isSelected: false,
+  };
+
+  setBuilds(prev => [newBuild, ...prev]); // add new build at top
+  setHasChanges(true);
+};
  // 🔹 Save changes to backend
  const handleSaveChanges = async () => {
   if (builds.length === 0) return; // nothing to save
 
   setIsLoading(true);
   try {
-    // Map builds to the backend expected format
-   const payload = builds.map(build => ({
+    // ✅ Flatten data into backend-friendly format
+    const payload = builds.map(build => ({
       id: build.id,
-      build: {
-        title: build.name,
-        price: build.totalCost,
-        cpu: build.components.cpu.name,
-        gpu: build.components.gpu.name,
-        ram: build.components.ram.name,
-        storage: build.components.storage.name,
-      }
+      title: build.name,
+      price: build.totalCost,
+      cpu: build.components.cpu.name,
+      gpu: build.components.gpu.name,
+      ram: build.components.ram.name,
+      storage: build.components.storage.name,
     }));
 
-    // Call API
+    // ✅ Call the same API
+    console.log("Payload sent to backend:", JSON.stringify(payload, null, 2));
     await bulkUpdateInventory(vendor.id, payload);
 
     setHasChanges(false);
-    console.log("Inventory successfully updated.");
+    console.log("✅ Inventory successfully updated.");
   } catch (error) {
-    console.error("Failed to save changes", error);
+    console.error("❌ Failed to save changes", error);
   } finally {
     setIsLoading(false);
   }
- };
+};
 
 
 
@@ -292,24 +310,37 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
       >
         <Card className="cyber-card shadow-[0_0_15px_rgba(147,51,234,0.4),_0_0_30px_rgba(147,51,234,0.2)] border-purple-500/50">
           <CardHeader className="pb-4">
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-white">Inventory Table</span>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={builds.length > 0 && builds.every(build => build.isSelected)}
-                  onCheckedChange={handleSelectAll}
-                />
-                <span className="text-sm text-gray-300">Select All</span>
-              </div>
-            </CardTitle>
-          </CardHeader>
+  <CardTitle className="flex items-center justify-between">
+    <span className="text-white">Inventory Table</span>
+
+    <div className="flex items-center gap-3">
+      <Button
+        onClick={handleAddBuild}
+        className="flex items-center gap-2 neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-300 border-cyan-500/50"
+      >
+        <span className="text-lg leading-none">+</span>
+        Add Build
+      </Button>
+
+      <div className="flex items-center gap-2">
+        <Checkbox
+          checked={builds.length > 0 && builds.every(build => build.isSelected)}
+          onCheckedChange={handleSelectAll}
+        />
+        <span className="text-sm text-gray-300">Select All</span>
+      </div>
+    </div>
+  </CardTitle>
+</CardHeader>
+
           <CardContent>
             {builds.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <AlertTriangle className="w-12 h-12 mx-auto mb-2" />
                   <p>No inventory found</p>
-                  <p className="text-sm">Upload your first builds to get started</p>
+                  <p className="text-sm mb-4">No builds found. Add your first one manually.</p>
+                  
                 </div>
               </div>
             ) : (

@@ -31,6 +31,8 @@ import { registerShop } from './services/api';
 import { saveBuild as saveBuildAPI, getSavedBuilds } from "./api/savedBuilds";
 import ProfileModal from './components/ProfileModal';
 import toast from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
+
 // removed unused getShops import to avoid confusion
 
 type AppScreen =
@@ -674,6 +676,18 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+      {/* ✅ Global Toast Notification System */}
+    <Toaster
+      position="top-center"
+      toastOptions={{
+       style: {
+         background: '#0f172a',
+         color: '#e2e8f0',
+         border: '1px solid #22d3ee',
+        },
+    }}
+/>
+
     </div>
   );
 }

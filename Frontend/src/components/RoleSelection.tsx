@@ -40,10 +40,9 @@ export default function RoleSelection({ onSelectRole }: RoleSelectionProps) {
                   <h3 className="text-xl font-bold text-white mb-3">Customer</h3>
                   <p className="text-gray-300 mb-6">Build a PC for me</p>
                   <div className="text-sm text-gray-400 space-y-2">
-                    <p>• Browse recommended builds</p>
                     <p>• Get personalized PC suggestions</p>
-                    <p>• Compare prices and specifications</p>
-                    <p>• Save and purchase builds</p>
+                    <p>• Price, Specs and Power consumption</p>
+                    <p>• Save and Share builds</p>
                   </div>
                 </div>
               </div>
@@ -72,11 +71,10 @@ export default function RoleSelection({ onSelectRole }: RoleSelectionProps) {
                     <Store className="w-10 h-10 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-3">Retailer</h3>
-                  <p className="text-gray-300 mb-6">Add my builds to Compfy</p>
+                  <p className="text-gray-300 mb-6">Add my inventory to Compfy</p>
                   <div className="text-sm text-gray-400 space-y-2">
-                    <p>• Register your shop</p>
-                    <p>• Upload inventory via Excel</p>
-                    <p>• Manage your PC builds</p>
+                    <p>• Register your store</p>
+                    <p>• Upload and Manage your inventory</p>
                     <p>• Reach more customers</p>
                   </div>
                 </div>
