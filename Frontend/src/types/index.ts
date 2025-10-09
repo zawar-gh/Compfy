@@ -1,3 +1,4 @@
+//index.ts
 export interface Component {
   name: string;
   details: string;

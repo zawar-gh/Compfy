@@ -1,3 +1,4 @@
+// InventoryUploadModal.tsx
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { X, Download, Upload, FileSpreadsheet, AlertCircle, CheckCircle } from 'lucide-react';

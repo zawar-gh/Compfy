@@ -1,3 +1,4 @@
+//mockdata.ts
 import { PCBuild, CategoryConfig } from '../types';
 
 export const categories: CategoryConfig[] = [

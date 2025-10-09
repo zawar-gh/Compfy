@@ -1,3 +1,4 @@
+//vendordashboard.tsx
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Store, Upload, List, AlertCircle, CheckCircle } from 'lucide-react';
