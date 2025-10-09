@@ -12,6 +12,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Button } from './ui/button';
+import { Toaster, toast } from 'sonner';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Checkbox } from './ui/checkbox';
@@ -160,17 +161,64 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
     setBuilds(prev => prev.map(build => ({ ...build, isSelected: checked })));
   };
 
-  const handleDeleteSelected = () => {
-    setBuilds(prev => prev.filter(build => !build.isSelected));
-    setHasChanges(true);
-  };
+  const handleDeleteSelected = async () => {
+  const selectedIds = builds.filter(build => build.isSelected).map(b => b.id);
+  
+  // Separate temporary IDs from real database IDs
+  const realIds = selectedIds.filter(id => !id.toString().startsWith('temp-'));
+  
+  // Delete from backend (real builds only)
+  if (realIds.length > 0) {
+    try {
+      await Promise.all(
+        realIds.map(id => 
+          fetch(`http://127.0.0.1:8000/api/inventory/vendor/${vendor.id}/build/${id}/delete/`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            }
+          })
+        )
+      );
+      console.log("✅ Deleted from backend:", realIds);
+    } catch (err) {
+      console.error("❌ Failed to delete from backend:", err);
+    }
+  }
+  
+  // Update local state (removes from UI)
+  setBuilds(prev => prev.filter(build => !build.isSelected));
+  setHasChanges(true); // ✅ THIS WAS MISSING!
+};
 
-  const handleDeleteAll = () => {
-    setBuilds([]);
-    setHasChanges(true);
-    setShowDeleteAllDialog(false);
-  };
-
+const handleDeleteAll = async () => {
+  const realIds = builds
+    .filter(b => !b.id.toString().startsWith('temp-'))
+    .map(b => b.id);
+  
+  // Delete from backend
+  if (realIds.length > 0) {
+    try {
+      await Promise.all(
+        realIds.map(id => 
+          fetch(`http://127.0.0.1:8000/api/inventory/vendor/${vendor.id}/build/${id}/delete/`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            }
+          })
+        )
+      );
+      console.log("✅ Deleted all from backend");
+    } catch (err) {
+      console.error("❌ Failed to delete all:", err);
+    }
+  }
+  
+  setBuilds([]);
+  setHasChanges(true); // ✅ THIS WAS MISSING!
+  setShowDeleteAllDialog(false);
+};
   
 //------Adding Builds Button--------
  const handleAddBuild = () => {
@@ -191,9 +239,13 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
   setBuilds(prev => [newBuild, ...prev]); // add new build at top
   setHasChanges(true);
 };
- // 🔹 Save changes to backend
- const handleSaveChanges = async () => {
-  if (builds.length === 0) return; // nothing to save
+const handleSaveChanges = async () => {
+  // ✅ Allow saving empty list to sync backend cleanly
+  if (builds.length === 0) {
+    await bulkUpdateInventory(vendor.id, []);
+    setHasChanges(false);
+    return;
+  }
 
   setIsLoading(true);
   try {
@@ -208,18 +260,42 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
       storage: build.components.storage.name,
     }));
 
-    // ✅ Call the same API
     console.log("Payload sent to backend:", JSON.stringify(payload, null, 2));
+
+    // ✅ Save to backend
     await bulkUpdateInventory(vendor.id, payload);
 
+    
+    // ✅ Refresh builds from backend (handles Axios .data directly)
+const refreshed = await getInventory(vendor.id);
+const inventoryArray = Array.isArray(refreshed?.data) ? refreshed.data : refreshed;
+
+const mappedBuilds = inventoryArray.map((item: any) => ({
+  id: item.id,
+  name: item.name,
+  totalCost: item.totalCost,
+  components: {
+    cpu: { name: item.components?.cpu || "N/A" },
+    gpu: { name: item.components?.gpu || "N/A" },
+    ram: { name: item.components?.ram || "N/A" },
+    storage: { name: item.components?.storage || "N/A" },
+  },
+  isEditing: false,
+  isSelected: false,
+}));
+
+setBuilds(mappedBuilds);
+
+
     setHasChanges(false);
-    console.log("✅ Inventory successfully updated.");
+    console.log("✅ Inventory successfully updated and refreshed.");
   } catch (error) {
     console.error("❌ Failed to save changes", error);
   } finally {
     setIsLoading(false);
   }
 };
+
 
 
 
