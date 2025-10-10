@@ -265,6 +265,23 @@ export default function App() {
     // run once on mount
   }, []);
 
+  // --------- Fetch Saved Builds After Login or Restore ----------
+useEffect(() => {
+  const fetchSavedBuilds = async () => {
+    const token = authState.token ?? localStorage.getItem("access_token");
+    if (!token || !authState.isAuthenticated) return;
+
+    try {
+      const builds = await getSavedBuilds(token);
+      setSavedBuilds(builds);
+    } catch (err) {
+      console.error("Failed to fetch saved builds:", err);
+    }
+  };
+
+  fetchSavedBuilds();
+}, [authState.isAuthenticated]);
+
   // Role selection
   const handleRoleSelect = (role: UserRole) => {
     if (role === 'customer') {
