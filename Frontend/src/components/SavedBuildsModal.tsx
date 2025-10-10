@@ -11,9 +11,8 @@ interface SavedBuildsModalProps {
   isOpen: boolean;
   onClose: () => void;
   savedBuilds: SavedBuild[];
-  onSelectBuild: (build: PCBuild, fromSaved?: boolean) => void; // ✅ now accepts optional 2nd arg
+  onSelectBuild: (build: PCBuild, fromSaved?: boolean) => void;
 }
-
 
 export default function SavedBuildsModal({
   isOpen,
@@ -32,13 +31,13 @@ export default function SavedBuildsModal({
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'gaming':
-        return 'bg-cyan-900/30 text-cyan-400 border-cyan-500/30';
+        return 'bg-cyan-900/30 text-cyan-400';
       case 'editing':
-        return 'bg-purple-900/30 text-purple-400 border-purple-500/30';
+        return 'bg-purple-900/30 text-purple-400';
       case 'office':
-        return 'bg-blue-900/30 text-blue-400 border-blue-500/30';
+        return 'bg-blue-900/30 text-blue-400';
       default:
-        return 'bg-gray-900/30 text-gray-400 border-gray-500/30';
+        return 'bg-gray-900/30 text-gray-400';
     }
   };
 
@@ -51,7 +50,7 @@ export default function SavedBuildsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl cyber-card border-cyan-500/30 bg-slate-900/95 max-h-[80vh] overflow-hidden p-6 rounded-2xl flex flex-col justify-between">
+      <DialogContent className="sm:max-w-4xl bg-slate-900/95 max-h-[80vh] overflow-hidden p-6 rounded-2xl flex flex-col justify-between">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -103,7 +102,7 @@ export default function SavedBuildsModal({
                       transition={{ duration: 0.3 }}
                     >
                       <Card
-                        className="cyber-card card-hover cursor-pointer shadow-[0_0_12px_rgba(6,182,212,0.25),_0_0_20px_rgba(6,182,212,0.1)] border-cyan-500/30"
+                        className="cursor-pointer bg-slate-800/70 rounded-md border border-cyan-500/50 hover:border-cyan-400 hover:shadow-[0_0_12px_rgba(6,182,212,0.5)] transition-all"
                         onClick={() => handleBuildClick(savedBuild)}
                       >
                         <CardContent className="p-3">
@@ -124,7 +123,7 @@ export default function SavedBuildsModal({
                                   : savedBuild.build.category.name}
                               </Badge>
 
-                              <Badge variant="outline" className="text-xs bg-slate-800/50 text-gray-300 border-slate-600/50">
+                              <Badge variant="outline" className="text-xs bg-slate-800/50 text-gray-300">
                                 {savedBuild.build.intensity.name}
                               </Badge>
                             </div>
@@ -168,7 +167,7 @@ export default function SavedBuildsModal({
           <div className="mt-5 pt-3 border-t border-slate-700/50">
             <Button
               onClick={onClose}
-              className="mx-auto block text-xs px-4 py-1 bg-slate-800/70 hover:bg-cyan-600/30 text-cyan-300 hover:text-white border border-cyan-500/30 rounded-md shadow-[0_0_4px_rgba(6,182,212,0.3)] transition-all"
+              className="mx-auto block text-xs px-4 py-1 bg-slate-800/70 hover:bg-cyan-600/30 text-cyan-300 hover:text-white border border-cyan-500/30 rounded-md transition-all"
             >
               Close
             </Button>
