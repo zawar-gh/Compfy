@@ -689,6 +689,7 @@ useEffect(() => {
             isOpen={showProfileModal}
             onClose={() => setShowProfileModal(false)}
             user={authState.user}
+            vendor={authState.vendor}  
             onLogout={handleLogout}
           />
         )}

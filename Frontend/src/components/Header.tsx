@@ -115,40 +115,7 @@ export default function Header({
                 Delete Profile
               </DropdownMenuItem>
 
-              {/* Vendor Section */}
-              {vendor && (
-                <>
-                  <DropdownMenuSeparator className="bg-slate-600/50" />
-                  <div className="px-2 py-1.5">
-                    <p className="text-xs text-gray-400 uppercase tracking-wider">Shop Settings</p>
-                  </div>
-                  
-                  <DropdownMenuItem 
-                    onClick={onEditVendorProfile}
-                    className="text-gray-300 hover:text-white hover:bg-purple-900/30 cursor-pointer"
-                  >
-                    <Store className="w-4 h-4 mr-2" />
-                    {vendor.shopName}
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem 
-                    onClick={onEditVendorProfile}
-                    className="text-gray-300 hover:text-white hover:bg-purple-900/30 cursor-pointer"
-                  >
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {vendor.address}
-                  </DropdownMenuItem>
-                  
-                  <DropdownMenuItem 
-                    onClick={onEditVendorProfile}
-                    className="text-gray-300 hover:text-white hover:bg-purple-900/30 cursor-pointer"
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    {vendor.phone}
-                  </DropdownMenuItem>
-                </>
-              )}
-
+           
               <DropdownMenuSeparator className="bg-slate-600/50" />
               
               {/* Saved Builds */}
