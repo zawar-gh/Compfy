@@ -84,8 +84,10 @@ export default function BuildDetails({
     const psuTdp = parseTdp((b as any)?.components?.psu?.tdp);
     // prefer PSU tdp, otherwise estimatedWattage, otherwise 0
     return psuTdp || Number(b.estimatedWattage || 0);
+  
   };
 
+  
   const calculatePowerCost = (hours: number, days: number = 1) => {
     const maxWattage = getMaxPowerConsumption(build);
     const kWh = (maxWattage / 1000) * hours * days;

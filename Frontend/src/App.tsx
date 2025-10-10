@@ -81,6 +81,7 @@ export default function App() {
   const [showElectricityModal, setShowElectricityModal] = useState(false);
   const [electricitySettings, setElectricitySettings] = useState<ElectricitySettings | null>(null);
   const [selectedBuild, setSelectedBuild] = useState<PCBuild | null>(null);
+  const [isFromSavedBuild, setIsFromSavedBuild] = useState(false);
 
   // Builds fetched from backend
   const [builds, setBuilds] = useState<PCBuild[]>([]);
@@ -351,15 +352,31 @@ useEffect(() => {
   };
 
   const handleElectricitySubmit = (settings: ElectricitySettings) => {
-    setElectricitySettings(settings);
-    setShowElectricityModal(false);
-    setCurrentScreen('builds');
-  };
+  setElectricitySettings(settings);
+  setShowElectricityModal(false);
 
-  const handleBuildSelect = (build: PCBuild) => {
-    setSelectedBuild(build);
-    setCurrentScreen('details');
-  };
+  if (isFromSavedBuild) {
+    setCurrentScreen("details");
+    setIsFromSavedBuild(false); // reset flag
+  } else {
+    setCurrentScreen("builds");
+  }
+};
+
+
+  const handleBuildSelect = (build: PCBuild, fromSaved = false) => {
+  setSelectedBuild(build);
+  setIsFromSavedBuild(fromSaved);
+
+  if (fromSaved) {
+    // ⚡ If it’s a saved build, show electricity modal first
+    setShowElectricityModal(true);
+  } else {
+    // Otherwise, go directly to details
+    setCurrentScreen("details");
+  }
+};
+
 
   const handleSaveBuild = async (build: PCBuild) => {
     const token = authState.token ?? localStorage.getItem("access_token");

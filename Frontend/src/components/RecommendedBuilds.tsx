@@ -143,7 +143,7 @@ export default function RecommendedBuilds({
         </h2>
         <div className="flex items-center justify-center gap-3 mb-6">
           <Badge variant="outline" className={getIntensityColor(intensity)}>
-            {getCategoryDisplay(category)} - {intensity.charAt(0).toUpperCase() + intensity.slice(1)}
+          {intensity ? intensity.charAt(0).toUpperCase() + intensity.slice(1) : ''}
           </Badge>
         </div>
         

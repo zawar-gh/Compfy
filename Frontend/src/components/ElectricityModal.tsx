@@ -1,3 +1,4 @@
+//------electricitymodal----------------
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Zap, DollarSign } from 'lucide-react';

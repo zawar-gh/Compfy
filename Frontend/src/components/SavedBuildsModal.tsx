@@ -1,4 +1,3 @@
-//savebuildsmodal.tsx---------------
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, Heart, Cpu, Zap, MapPin } from 'lucide-react';
@@ -12,14 +11,15 @@ interface SavedBuildsModalProps {
   isOpen: boolean;
   onClose: () => void;
   savedBuilds: SavedBuild[];
-  onSelectBuild: (build: PCBuild) => void;
+  onSelectBuild: (build: PCBuild, fromSaved?: boolean) => void; // ✅ now accepts optional 2nd arg
 }
 
-export default function SavedBuildsModal({ 
-  isOpen, 
-  onClose, 
-  savedBuilds, 
-  onSelectBuild 
+
+export default function SavedBuildsModal({
+  isOpen,
+  onClose,
+  savedBuilds,
+  onSelectBuild,
 }: SavedBuildsModalProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PK', {
@@ -44,14 +44,14 @@ export default function SavedBuildsModal({
 
   const handleBuildClick = (savedBuild: SavedBuild) => {
     if (savedBuild.build) {
-      onSelectBuild(savedBuild.build);
+      onSelectBuild(savedBuild.build, true);
       onClose();
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl cyber-card border-cyan-500/30 bg-slate-900/95 max-h-[80vh] overflow-hidden">
+      <DialogContent className="sm:max-w-4xl cyber-card border-cyan-500/30 bg-slate-900/95 max-h-[80vh] overflow-hidden p-6 rounded-2xl flex flex-col justify-between">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -63,7 +63,8 @@ export default function SavedBuildsModal({
           <DialogDescription className="sr-only">
             View and manage your saved PC builds
           </DialogDescription>
-          
+
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Heart className="w-5 h-5 text-cyan-400" />
@@ -71,15 +72,16 @@ export default function SavedBuildsModal({
             </h2>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={onClose}
-              className="text-gray-400 hover:text-white"
+              className="w-6 h-6 rounded-full text-gray-400 hover:text-cyan-400 hover:bg-slate-800/70 transition-all"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto pr-1">
             {savedBuilds.length === 0 ? (
               <div className="text-center py-12">
                 <Heart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
@@ -89,10 +91,10 @@ export default function SavedBuildsModal({
                 </p>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {savedBuilds.map((savedBuild) => {
                   if (!savedBuild.build) return null;
-                  
+
                   return (
                     <motion.div
                       key={savedBuild.id}
@@ -100,32 +102,31 @@ export default function SavedBuildsModal({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Card 
-                        className="cyber-card card-hover cursor-pointer shadow-[0_0_15px_rgba(6,182,212,0.3),_0_0_30px_rgba(6,182,212,0.1)] border-cyan-500/30"
+                      <Card
+                        className="cyber-card card-hover cursor-pointer shadow-[0_0_12px_rgba(6,182,212,0.25),_0_0_20px_rgba(6,182,212,0.1)] border-cyan-500/30"
                         onClick={() => handleBuildClick(savedBuild)}
                       >
-                        <CardContent className="p-4">
+                        <CardContent className="p-3">
                           <div className="mb-3">
                             <h3 className="font-semibold text-white text-sm mb-2 line-clamp-2">
                               {savedBuild.build.name}
                             </h3>
                             <div className="flex items-center gap-2 mb-2">
-                        <Badge
-                           className={getCategoryColor(
-                             typeof savedBuild.build.category === "string"
-                                ? savedBuild.build.category
-                                : savedBuild.build.category.id
-                            )}
-                          >
-                            {typeof savedBuild.build.category === "string"
-                                ? savedBuild.build.category
-                                : savedBuild.build.category.name}
-                            </Badge>
+                              <Badge
+                                className={getCategoryColor(
+                                  typeof savedBuild.build.category === 'string'
+                                    ? savedBuild.build.category
+                                    : savedBuild.build.category.id
+                                )}
+                              >
+                                {typeof savedBuild.build.category === 'string'
+                                  ? savedBuild.build.category
+                                  : savedBuild.build.category.name}
+                              </Badge>
 
                               <Badge variant="outline" className="text-xs bg-slate-800/50 text-gray-300 border-slate-600/50">
                                 {savedBuild.build.intensity.name}
                               </Badge>
-
                             </div>
                           </div>
 
@@ -163,11 +164,11 @@ export default function SavedBuildsModal({
             )}
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-600/50">
+          {/* Footer */}
+          <div className="mt-5 pt-3 border-t border-slate-700/50">
             <Button
-              variant="outline"
               onClick={onClose}
-              className="w-full text-gray-200 hover:text-white border-slate-600/50 hover:border-slate-500"
+              className="mx-auto block text-xs px-4 py-1 bg-slate-800/70 hover:bg-cyan-600/30 text-cyan-300 hover:text-white border border-cyan-500/30 rounded-md shadow-[0_0_4px_rgba(6,182,212,0.3)] transition-all"
             >
               Close
             </Button>
