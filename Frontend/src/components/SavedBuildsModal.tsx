@@ -1,3 +1,4 @@
+//savebuildsmodal.tsx---------------
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, Heart, Cpu, Zap, MapPin } from 'lucide-react';
@@ -109,12 +110,22 @@ export default function SavedBuildsModal({
                               {savedBuild.build.name}
                             </h3>
                             <div className="flex items-center gap-2 mb-2">
-                              <Badge className={getCategoryColor(savedBuild.build.category)}>
-                                {savedBuild.build.category}
-                              </Badge>
+                        <Badge
+                           className={getCategoryColor(
+                             typeof savedBuild.build.category === "string"
+                                ? savedBuild.build.category
+                                : savedBuild.build.category.id
+                            )}
+                          >
+                            {typeof savedBuild.build.category === "string"
+                                ? savedBuild.build.category
+                                : savedBuild.build.category.name}
+                            </Badge>
+
                               <Badge variant="outline" className="text-xs bg-slate-800/50 text-gray-300 border-slate-600/50">
-                                {savedBuild.build.intensity}
+                                {savedBuild.build.intensity.name}
                               </Badge>
+
                             </div>
                           </div>
 

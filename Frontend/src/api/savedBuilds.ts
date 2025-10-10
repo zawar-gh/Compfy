@@ -9,7 +9,7 @@ export async function saveBuild(build: PCBuild, token: string): Promise<SavedBui
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ build_id: build.id }),  // <-- match backend expected field
+    body: JSON.stringify({ build: build.id }),  // <-- match backend expected field
   });
 
   if (!response.ok) {
