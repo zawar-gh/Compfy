@@ -641,6 +641,7 @@ useEffect(() => {
               onOpenPriceEditor={handleOpenPriceEditor}
               isSaved={savedBuilds.some(b => b.id === selectedBuild.id)} // ✅ NEW
 
+
             />
           </motion.div>
         )}

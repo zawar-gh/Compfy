@@ -10,8 +10,7 @@ export async function getBuilds(): Promise<PCBuild[]> {
   }
   const data = await response.json();
 
-  // 🔥 Normalize backend response so UI doesn't crash
-    return data.map((build: any) => ({
+  return data.map((build: any) => ({
     id: build.id,
     name: build.name || 'N/A',
     totalCost: Number(build.totalCost) || 0,
@@ -20,11 +19,15 @@ export async function getBuilds(): Promise<PCBuild[]> {
       cpu: { name: build.components?.cpu?.name || 'N/A' },
       gpu: { name: build.components?.gpu?.name || 'N/A' },
       ram: { name: build.components?.ram?.name || 'N/A' },
-      storage: { name: build.components?.storage?.name || 'N/A' }
+      storage: { name: build.components?.storage?.name || 'N/A' },
+      motherboard: { name: build.components?.motherboard?.name || 'N/A' },
+      psu: { name: build.components?.psu?.name || 'N/A' },
+      cooling: { name: build.components?.cooling?.name || 'N/A' },
     },
     category: build.category || 'gaming',
     intensity: build.intensity || 'casual',
-    isActive: build.isActive ?? true
+    isActive: build.isActive ?? true,
+    vendor: build.vendor || null, // 🔥 Add this
   }));
 }
 
@@ -35,7 +38,6 @@ export async function getBuildDetail(id: number): Promise<PCBuild> {
   }
   const build = await response.json();
 
-  // same normalization
   return {
     id: build.id,
     name: build.name,
@@ -45,11 +47,11 @@ export async function getBuildDetail(id: number): Promise<PCBuild> {
     category: typeof build.category === "string" 
       ? build.category 
       : build.category?.id || "gaming",
-
     intensity: typeof build.intensity === "string" 
       ? build.intensity 
       : build.intensity?.id || "casual",
-
-    isActive: build.isActive ?? true
+    isActive: build.isActive ?? true,
+    vendor: build.vendor || null, // 🔥 Add this
   };
 }
+

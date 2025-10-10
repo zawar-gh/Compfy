@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { PCBuild, CategoryType, IntensityType } from '../types';
+import VendorInfoModal from './VendorInfoModal';
 
 interface RecommendedBuildsProps {
   builds: PCBuild[];
@@ -39,6 +40,8 @@ export default function RecommendedBuilds({
         return buildsCopy;
     }
   };
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+  const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
 
   const sortedBuilds = getSortedBuilds();
   const displayedBuilds = sortedBuilds.slice(0, visibleBuilds);
@@ -253,10 +256,29 @@ export default function RecommendedBuilds({
                     Estimated consumption
                   </div>
                 </div>
+               {/* Vendor Info Button */}
+{build.vendor && (
+  <Button
+    size="sm"
+    variant="outline"
+    className="mt-3"
+    onClick={(e) => {
+      e.stopPropagation(); // Prevent triggering onBuildSelect
+      setSelectedVendor(build.vendor);
+      setIsVendorModalOpen(true);
+    }}
+  >
+    View Vendor Info
+  </Button>
+)}
+
+
+
               </CardContent>
             </Card>
           </motion.div>
         ))}
+        
       </div>
 
       {/* Load More Button */}
@@ -338,6 +360,15 @@ export default function RecommendedBuilds({
           Showing {displayedBuilds.length} of {sortedBuilds.length} builds • {getSortLabel()}
         </motion.div>
       )}
+      {/* Vendor Modal */}
+{isVendorModalOpen && selectedVendor && (
+  <VendorInfoModal
+  isOpen={isVendorModalOpen} // ✅ Pass this prop
+  vendor={selectedVendor!}   // Non-null assertion because we already check selectedVendor
+  onClose={() => setIsVendorModalOpen(false)}
+/>
+)}
+
     </div>
   );
 }
