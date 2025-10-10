@@ -639,6 +639,8 @@ useEffect(() => {
               user={authState.user}
               themeCategory={selectedCategory}
               onOpenPriceEditor={handleOpenPriceEditor}
+              isSaved={savedBuilds.some(b => b.id === selectedBuild.id)} // ✅ NEW
+
             />
           </motion.div>
         )}
