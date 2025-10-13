@@ -10,9 +10,10 @@ import { categories } from '../data/mockData';
 interface RequirementSelectionProps {
   onSelect: (category: CategoryType, intensity: IntensityType) => void;
   selectedCategory?: CategoryType | null;
+  onBackToSelection: () => void; 
 }
 
-export default function RequirementSelection({ onSelect, selectedCategory: propSelectedCategory }: RequirementSelectionProps) {
+export default function RequirementSelection({ onSelect, selectedCategory: propSelectedCategory, onBackToSelection }: RequirementSelectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(propSelectedCategory || null);
   const [selectedIntensity, setSelectedIntensity] = useState<IntensityType | null>(null);
 
@@ -167,6 +168,7 @@ export default function RequirementSelection({ onSelect, selectedCategory: propS
                 </Card>
               </motion.div>
             </div>
+            
 
             {/* Next Button */}
             {selectedIntensity && (
@@ -189,6 +191,36 @@ export default function RequirementSelection({ onSelect, selectedCategory: propS
             )}
           </motion.div>
         )}
+        {/* Back to Role Selection */}
+<motion.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ duration: 0.6, delay: 0.5 }}
+  className="text-center mt-8"
+>
+  <Button
+  variant="outline"
+  onClick={() => {
+    const container = document.querySelector('.requirement-container');
+    if (container) {
+      container.classList.add('fade-out');
+      setTimeout(() => {
+        setSelectedCategory(null);
+        setSelectedIntensity(null);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        onBackToSelection();
+      }, 500); // matches fade duration
+    } else {
+      onBackToSelection();
+    }
+  }}
+  className="neon-button text-gray-200 hover:text-white border-cyan-500/30 hover:border-cyan-400 bg-transparent hover:bg-cyan-900/20"
+>
+  Back to Role Selection
+</Button>
+
+</motion.div>
+
       </div>
     </div>
   );

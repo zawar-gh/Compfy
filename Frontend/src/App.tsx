@@ -279,6 +279,12 @@ useEffect(() => {
       console.error("Failed to fetch saved builds:", err);
     }
   };
+const handleBackToRoleSelection = () => {
+  setCurrentScreen('role-selection');
+  setSelectedCategory(null);
+  setSelectedIntensity(null);
+  setElectricitySettings(null);
+};
 
   fetchSavedBuilds();
 }, [authState.isAuthenticated]);
@@ -600,6 +606,7 @@ useEffect(() => {
             <RequirementSelection
               categories={categories}
               onSelect={handleCategoryIntensitySelect}
+              onBackToSelection={handleBackToRoleSelection}
             />
           </motion.div>
         )}
