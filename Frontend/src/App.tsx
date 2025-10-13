@@ -489,25 +489,6 @@ const handleBackToRoleSelection = () => {
         <div className="absolute right-20 top-0 w-px h-full bg-gradient-to-b from-transparent via-blue-400 to-transparent" />
       </div>
 
-      {/* Background Images */}
-      <div className="fixed inset-0 opacity-5 pointer-events-none">
-        <ImageWithFallback
-          src="https://images.unsplash.com/photo-1617507171089-6cb9aa5add36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-          alt="Gaming Setup Background"
-          className="absolute top-0 right-0 w-1/3 h-1/2 object-cover"
-        />
-        <ImageWithFallback
-          src="https://images.unsplash.com/photo-1636036766419-4e0e3e628acc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-          alt="Gaming Workstation Background"
-          className="absolute bottom-0 left-0 w-1/3 h-1/2 object-cover"
-        />
-        <ImageWithFallback
-          src="https://images.unsplash.com/photo-1636488363148-818c08eec89e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-          alt="Cyberpunk Gaming Setup Background"
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 object-cover"
-        />
-      </div>
-
       {/* Header */}
       {authState.isAuthenticated && currentScreen !== 'auth' && (
         <Header
