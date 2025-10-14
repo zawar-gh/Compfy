@@ -135,8 +135,12 @@ export default function SavedBuildsModal({
                               <span className="truncate">{savedBuild.build.components.cpu.name}</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-gray-400">
+                              <Cpu className="w-3 h-3" />
+                              <span>{savedBuild.build.components.gpu.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-400">
                               <Zap className="w-3 h-3" />
-                              <span>{savedBuild.build.estimatedWattage}W</span>
+                              <span>{savedBuild.build.components.ram.name}</span>
                             </div>
                             {savedBuild.build.city && (
                               <div className="flex items-center gap-2 text-xs text-gray-400">
@@ -150,7 +154,7 @@ export default function SavedBuildsModal({
                             <div className="text-lg font-bold text-cyan-400">
                               {formatCurrency(savedBuild.build.totalCost)}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-white">
                               Saved {new Date(savedBuild.savedAt).toLocaleDateString()}
                             </div>
                           </div>
@@ -168,6 +172,7 @@ export default function SavedBuildsModal({
             <Button
               onClick={onClose}
               className="mx-auto block text-xs px-4 py-1 bg-slate-800/70 hover:bg-cyan-600/30 text-cyan-300 hover:text-white border border-cyan-500/30 rounded-md transition-all"
+              
             >
               Close
             </Button>

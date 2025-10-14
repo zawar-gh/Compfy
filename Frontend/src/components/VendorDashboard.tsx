@@ -172,8 +172,8 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
               </p>
               
               <ul className="text-sm text-gray-400 space-y-1">
-                <li>• Download Excel template</li>
-                <li>• Fill in your PC builds</li>
+                <li>• Download Inventory Sheet</li>
+                <li>• Add your Components list</li>
                 <li>• Upload and validate data</li>
               </ul>
               
@@ -221,8 +221,8 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
               
               <ul className="text-sm text-gray-400 space-y-1">
                 <li>• View all your builds</li>
-                <li>• Edit prices and details</li>
-                <li>• Bulk delete operations</li>
+                <li>• Edit Inventory Data</li>
+                <li>• Add or Delete PC Builds</li>
               </ul>
               
               <Button

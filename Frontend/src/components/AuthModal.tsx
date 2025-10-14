@@ -118,7 +118,6 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
       <DialogContent className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-8 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] text-gray-300">
         <motion.div className="flex flex-col space-y-4">
           <DialogTitle className="text-white">Authentication</DialogTitle>
-          <DialogDescription className="text-gray-400">Login or sign up to access Compfy</DialogDescription>
 
           {errors.general && <p className="text-red-500">{errors.general}</p>}
 
@@ -142,7 +141,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
                 onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                 className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
               />
-              <Button onClick={handleLogin} disabled={isLoading} className="bg-cyan-900/30 hover:bg-cyan-900/50 text-white">
+              <Button onClick={handleLogin} disabled={isLoading} className="w-full neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50">
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </TabsContent>
@@ -167,7 +166,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
                 onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
                 className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
               />
-              <Button onClick={handleSignup} disabled={isLoading} className="bg-cyan-900/30 hover:bg-cyan-900/50 text-white">
+              <Button onClick={handleSignup} disabled={isLoading} className="w-full neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50">
                 {isLoading ? "Signing up..." : "Sign Up"}
               </Button>
             </TabsContent>

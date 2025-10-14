@@ -510,7 +510,7 @@ setBuilds(mappedBuilds);
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-slate-600/50 text-gray-300 hover:text-white">
+            <AlertDialogCancel className="border-slate-600/50 text-black-300 hover:text-grey-200">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 

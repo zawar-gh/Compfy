@@ -92,7 +92,7 @@ export default function Header({
                 className="text-gray-300 hover:text-white hover:bg-cyan-900/30 cursor-pointer"
               >
                 <User className="w-4 h-4 mr-2" />
-                View Profile
+                Profile Info
               </DropdownMenuItem>
               
               <DropdownMenuItem 

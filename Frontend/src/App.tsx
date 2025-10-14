@@ -542,7 +542,7 @@ const handleBackToRoleSelection = () => {
     </h1>
 
     {/* Tagline */}
-    <p className="text-xl text-gray-300">
+    <p className="text-l text-gray-300">
       Build your PC Comfortably
     </p>
   </motion.div>

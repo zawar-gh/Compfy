@@ -114,7 +114,7 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <FileSpreadsheet className="w-5 h-5 text-purple-400" />
-              Manage Inventory
+              Add Your Inventory
             </h2>
             <Button
               variant="ghost"
@@ -171,13 +171,10 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
             <>
               {/* Instructions */}
               <div className="mb-6 p-4 bg-purple-900/20 border border-purple-500/30 rounded-lg">
-                <h3 className="font-semibold text-purple-300 mb-2">Required Excel Columns:</h3>
+                <h3 className="font-semibold text-purple-300 mb-2">Fill out these columns:</h3>
                 <div className="text-sm text-purple-200 space-y-1">
-                  <p><strong>Required:</strong> build_name, cpu_model, gpu_model, ram, storage, price, city</p>
-                  <p><strong>Optional:</strong> psu, case (will default to "Standard PSU/Case")</p>
-                  <p className="text-xs text-purple-300 mt-2">
-                    Download our template to get started with the correct format.
-                  </p>
+                  <p><strong>Required:</strong> Build-Name, CPU, GPU, RAM, Storage, Price, City</p>
+                  <p><strong>Optional:</strong> PSU, Casing (Default= "Standard PSU/Case")</p>
                 </div>
               </div>
 
@@ -189,7 +186,7 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
                   disabled={isUploading}
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Download Inventory Template
+                  Get Inventory Sheet
                 </Button>
               </div>
 
@@ -204,7 +201,7 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
                     type="file"
                     accept=".xlsx,.csv"
                     onChange={handleFileSelect}
-                    className="bg-slate-800/50 border-slate-600/50 text-white file:bg-purple-900/50 file:text-purple-200 file:border-0 file:rounded file:px-4 file:py-2"
+                    className="bg-slate-800/60 border-slate-700/50 text-white file:bg-purple-900/50 file:text-purple-300 file:border- file:rounded file:px-4 file:py-3"
                     disabled={isUploading}
                   />
                   {selectedFile && (
@@ -241,7 +238,7 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
                 variant="outline"
                 onClick={handleClose}
                 disabled={isUploading}
-                className="flex-1 text-gray-200 hover:text-white border-slate-600/50 hover:border-slate-500"
+                className="flex-1 border-slate-500 dark:border-slate-400 text-black-300 dark:text-gray-200 hover:text-grey hover:border-slate-300"
               >
                 Cancel
               </Button>

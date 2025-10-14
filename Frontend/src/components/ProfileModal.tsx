@@ -93,7 +93,8 @@ export default function ProfileModal({
           )}
 
           {/* 🚪 Logout Button */}
-          <Button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 w-full">
+          <Button onClick={handleLogout} className="w-full neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50">
+          
             Logout
           </Button>
         </motion.div>

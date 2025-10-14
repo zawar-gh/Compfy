@@ -71,7 +71,7 @@ export default function RequirementSelection({ onSelect, selectedCategory: propS
             What do you need your PC for?
           </h2>
           <p className="text-xl text-gray-300">
-            Choose the category that best describes your primary use case
+            Choose your primary use case
           </p>
         </motion.div>
 
