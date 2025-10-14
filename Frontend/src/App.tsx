@@ -461,8 +461,28 @@ const handleBackToRoleSelection = () => {
 
   if (error)
     return <div className="p-8 text-red-500 text-center">{error}</div>;
-  if (builds.length === 0 && !error)
-    return <div className="p-8 text-gray-300 text-center">Loading builds...</div>;
+
+
+ if (builds.length === 0 && !error) {
+  return (
+    <motion.div
+      className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+    >
+      <div className="relative w-24 h-24 mb-8">
+        <div className="absolute inset-0 border-4 border-cyan-400 rounded-full animate-ping opacity-40" />
+        <div className="absolute inset-0 border-4 border-cyan-500 rounded-full border-t-transparent animate-spin" />
+      </div>
+      <h2 className="text-2xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
+        Loading Builds...
+      </h2>
+      <p className="text-gray-400 mt-2">Please wait a moment</p>
+    </motion.div>
+  );
+}
+
 
   // ------------------- RENDER -------------------
   return (
