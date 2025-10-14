@@ -69,11 +69,13 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
       name: item.name, // Changed from item.build?.title
       totalCost: item.totalCost, // Changed from item.build?.price
       components: {
-        cpu: { name: item.components.cpu || "N/A" }, // Changed from item.build?.cpu
-        gpu: { name: item.components.gpu || "N/A" }, // Changed from item.build?.gpu
-        ram: { name: item.components.ram || "N/A" }, // Changed from item.build?.ram
-        storage: { name: item.components.storage || "N/A" }, // Changed from item.build?.storage
+        cpu: { name: item.components?.cpu?.name || item.components?.cpu || "N/A" },
+        gpu: { name: item.components?.gpu?.name || item.components?.gpu || "N/A" },
+        ram: { name: item.components?.ram?.name || item.components?.ram || "N/A" },
+        storage: { name: item.components?.storage?.name || item.components?.storage || "N/A" },
+        psu: { name: item.components?.psu?.name || item.components?.psu || "N/A" },
       },
+
       isEditing: false,
       isSelected: false,
     }));
@@ -231,6 +233,7 @@ const handleDeleteAll = async () => {
       gpu: { name: "" },
       ram: { name: "" },
       storage: { name: "" },
+      psu: { name: "" },
     },
     isEditing: true,
     isSelected: false,
@@ -258,6 +261,8 @@ const handleSaveChanges = async () => {
       gpu: build.components.gpu.name,
       ram: build.components.ram.name,
       storage: build.components.storage.name,
+      psu: build.components.psu.name,
+
     }));
 
     console.log("Payload sent to backend:", JSON.stringify(payload, null, 2));
@@ -279,6 +284,7 @@ const mappedBuilds = inventoryArray.map((item: any) => ({
     gpu: { name: item.components?.gpu || "N/A" },
     ram: { name: item.components?.ram || "N/A" },
     storage: { name: item.components?.storage || "N/A" },
+    psu: { name: item.components?.psu || "N/A" },
   },
   isEditing: false,
   isSelected: false,
@@ -454,6 +460,7 @@ setBuilds(mappedBuilds);
                       <th className="text-left py-3 px-4 text-gray-300">GPU</th>
                       <th className="text-left py-3 px-4 text-gray-300">RAM</th>
                       <th className="text-left py-3 px-4 text-gray-300">Storage</th>
+                      <th className="text-left py-3 px-4 text-gray-300">PSU</th>
                       <th className="text-left py-3 px-4 text-gray-300">
                         <button
                           onClick={() => handleSort('price')}
@@ -536,13 +543,14 @@ function BuildRow({
   formatCurrency: (amount: number) => string;
 }) {
   const [editData, setEditData] = useState({
-    name: build.name,
-    cpu: build.components.cpu.name,
-    gpu: build.components.gpu.name,
-    ram: build.components.ram.name,
-    storage: build.components.storage.name,
-    totalCost: build.totalCost
-  });
+  name: build.name,
+  cpu: build.components?.cpu?.name || "",
+  gpu: build.components?.gpu?.name || "",
+  ram: build.components?.ram?.name || "",
+  storage: build.components?.storage?.name || "",
+  psu: build.components?.psu?.name || "",
+  totalCost: build.totalCost
+});
 
   const handleSave = () => {
     onSave(build.id, {
@@ -553,7 +561,8 @@ function BuildRow({
         cpu: { ...build.components.cpu, name: editData.cpu },
         gpu: { ...build.components.gpu, name: editData.gpu },
         ram: { ...build.components.ram, name: editData.ram },
-        storage: { ...build.components.storage, name: editData.storage }
+        storage: { ...build.components.storage, name: editData.storage },
+        psu: { ...build.components.psu, name: editData.psu },
       }
     });
   };
@@ -622,6 +631,20 @@ function BuildRow({
         )}
       </td>
       <td className="py-3 px-4">
+  {build.isEditing ? (
+    <Input
+      value={editData.psu}
+      onChange={(e) => setEditData(prev => ({ ...prev, psu: e.target.value }))}
+      className="bg-slate-800/50 border-slate-600/50 text-white text-sm"
+    />
+  ) : (
+    <span className="text-gray-300 text-sm">
+  {build.components?.psu?.name || "—"}
+</span>
+  )}
+</td>
+
+      <td className="py-3 px-4">
         {build.isEditing ? (
           <Input
             type="number"
@@ -676,5 +699,6 @@ interface InventoryItem {
     gpu: string;
     ram: string;
     storage: string;
+    psu: string;
   }
 }

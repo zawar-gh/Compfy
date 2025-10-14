@@ -36,9 +36,9 @@ export default function InventoryUploadModal({
   const [errors, setErrors] = useState<string[]>([]);
 
   const handleDownloadTemplate = () => {
-    const csvContent = `build_name,cpu_model,gpu_model,ram,storage,psu,casing,price,city
-Gaming Beast i5,Intel Core i5-8400,GTX 1060 6GB,16GB DDR4,256GB SSD + 1TB HDD,Standard PSU,Standard Casing,45000,${vendor.city}
-Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Standard Casing,25000,${vendor.city}`;
+    const csvContent = `build_name,cpu_model,gpu_model,ram,storage,psu,case,price,city
+Gaming Beast i5,Intel Core i5-8400,GTX 1060 6GB,16GB DDR4,256GB SSD + 1TB HDD,Standard PSU,Standard Case,45000,${vendor.city}
+Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Standard Case,25000,${vendor.city}`;
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -174,7 +174,7 @@ Office Pro,Intel Core i3-8100,Intel UHD 630,8GB DDR4,256GB SSD,Standard PSU,Stan
                 <h3 className="font-semibold text-purple-300 mb-2">Required Excel Columns:</h3>
                 <div className="text-sm text-purple-200 space-y-1">
                   <p><strong>Required:</strong> build_name, cpu_model, gpu_model, ram, storage, price, city</p>
-                  <p><strong>Optional:</strong> psu, casing (will default to "Standard PSU/Casing")</p>
+                  <p><strong>Optional:</strong> psu, case (will default to "Standard PSU/Case")</p>
                   <p className="text-xs text-purple-300 mt-2">
                     Download our template to get started with the correct format.
                   </p>
