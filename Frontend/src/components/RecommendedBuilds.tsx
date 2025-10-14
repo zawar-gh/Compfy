@@ -47,6 +47,16 @@ export default function RecommendedBuilds({
   const displayedBuilds = sortedBuilds.slice(0, visibleBuilds);
   const hasMoreBuilds = visibleBuilds < sortedBuilds.length;
 
+  const getPsuWattageFromName = (psu: string): number | undefined => {
+  if (!psu) return undefined;
+  const match = psu.match(/(\d+)\s*W/i);
+  if (match) {
+    const n = Number(match[1]);
+    return Number.isFinite(n) ? n : undefined;
+  }
+  return undefined;
+};
+
   const handleLoadMore = async () => {
     setIsLoading(true);
     
@@ -120,6 +130,11 @@ export default function RecommendedBuilds({
   const getIntensityColor = (intensity: IntensityType) => {
     return intensity === 'casual' ? 'bg-green-500/20 text-green-400 border-green-500' : 'bg-orange-500/20 text-orange-400 border-orange-500';
   };
+  const getBuildPower = (build: PCBuild) => {
+  const psuWattage = getPsuWattageFromName(build.components?.psu?.name || '');
+  return psuWattage || build.estimatedWattage || 0;
+};
+
 
   return (
     <div className="max-w-7xl mx-auto px-6 pb-12">
@@ -250,8 +265,9 @@ export default function RecommendedBuilds({
                     <span className="font-medium text-sm text-gray-300">Power Usage</span>
                   </div>
                   <div className="text-lg font-bold text-cyan-400">
-                    {build.estimatedWattage}W
+                    {getBuildPower(build)}W
                   </div>
+
                   <div className="text-xs text-gray-400">
                     Estimated consumption
                   </div>

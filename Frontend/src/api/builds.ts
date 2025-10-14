@@ -22,7 +22,6 @@ export async function getBuilds(): Promise<PCBuild[]> {
       storage: { name: build.components?.storage?.name || 'N/A' },
       motherboard: { name: build.components?.motherboard?.name || 'N/A' },
       psu: { name: build.components?.psu?.name || 'N/A' },
-      cooling: { name: build.components?.cooling?.name || 'N/A' },
     },
     category: build.category || 'gaming',
     intensity: build.intensity || 'casual',
