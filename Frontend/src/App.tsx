@@ -530,20 +530,24 @@ const handleBackToRoleSelection = () => {
       )}
 
       {(currentScreen === 'auth' || currentScreen === 'role-selection') && (
-        <motion.header
-          className="text-center py-3"
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-6">
-            Compfy
-          </h1>
-          <p className="text-xl text-gray-300">
-            Build your PC Comfortably
-          </p>
-        </motion.header>
-      )}
+  <motion.div
+    className="flex flex-col items-center space-y-4 mt-20"
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+  >
+    {/* Logo */}
+    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+      Compfy
+    </h1>
+
+    {/* Tagline */}
+    <p className="text-xl text-gray-300">
+      Build your PC Comfortably
+    </p>
+  </motion.div>
+)}
+
 
       {/* Screens */}
       <AnimatePresence mode="wait">
@@ -556,7 +560,7 @@ const handleBackToRoleSelection = () => {
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             className="flex items-center justify-center min-h-[400px] px-4"
           >
-            <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-10 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] flex flex-col items-center space-y-6 w-full max-w-md">
+            <div className="flex flex-col items-center space-y-6 w-full max-w-md">
               <h1 className="text-4xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
                 Begin your Digital journey
               </h1>
