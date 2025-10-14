@@ -71,6 +71,19 @@ export default function BuildDetails({
     }).format(typeof amount === 'number' ? amount : Number(amount || 0));
   };
 
+  // Extract numeric wattage from PSU name string, e.g. "Cooler Master 500W 80+ Bronze" => 500
+const getPsuWattageFromName = (psu: string): number | undefined => {
+  if (!psu) return undefined;
+
+  // Match first number followed by optional space and "W" (case-insensitive)
+  const match = psu.match(/(\d+)\s*W/i);
+  if (match) {
+    const n = Number(match[1]);
+    return Number.isFinite(n) ? n : undefined;
+  }
+  return undefined;
+};
+
   // Safely parse numeric TDP values (strings like "650W" or numbers)
   const parseTdp = (val: any): number | undefined => {
     if (val == null) return undefined;
@@ -80,15 +93,16 @@ export default function BuildDetails({
     return Number.isFinite(n) ? n : undefined;
   };
 
-  // Return reasonable maximum power consumption
-  const getMaxPowerConsumption = (b: PCBuild) => {
-    const psuTdp = parseTdp((b as any)?.components?.psu?.tdp);
-    // prefer PSU tdp, otherwise estimatedWattage, otherwise 0
-    return psuTdp || Number(b.estimatedWattage || 0);
   
-  };
 
-  
+  const getMaxPowerConsumption = (b: PCBuild) => {
+  const psuWattage = getPsuWattageFromName(b.components?.psu?.name || '');
+  const psuTdp = parseTdp(b.components?.psu?.tdp);
+
+  // Priority: PSU name wattage > PSU tdp > estimatedWattage
+  return psuWattage || psuTdp || Number(b.estimatedWattage || 0);
+};
+
   const calculatePowerCost = (hours: number, days: number = 1) => {
     const maxWattage = getMaxPowerConsumption(build);
     const kWh = (maxWattage / 1000) * hours * days;
