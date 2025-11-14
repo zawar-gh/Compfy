@@ -411,7 +411,7 @@ const handleBackToRoleSelection = () => {
 
   try {
     // Call your API to remove the saved build
-    await fetch(`http://127.0.0.1:8000/api/saved-builds/${savedBuildId}/`, {
+    await fetch(`http://127.0.0.1:8000/api/builds/saved-builds/${savedBuildId}/`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
