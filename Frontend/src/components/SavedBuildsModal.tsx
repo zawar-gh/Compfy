@@ -12,6 +12,7 @@ interface SavedBuildsModalProps {
   onClose: () => void;
   savedBuilds: SavedBuild[];
   onSelectBuild: (build: PCBuild, fromSaved?: boolean) => void;
+  onRemoveSavedBuild: (savedBuildId: string) => void;
 }
 
 export default function SavedBuildsModal({
@@ -19,6 +20,7 @@ export default function SavedBuildsModal({
   onClose,
   savedBuilds,
   onSelectBuild,
+  onRemoveSavedBuild,
 }: SavedBuildsModalProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PK', {
@@ -151,13 +153,27 @@ export default function SavedBuildsModal({
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <div className="text-lg font-bold text-cyan-400">
-                              {formatCurrency(savedBuild.build.totalCost)}
-                            </div>
-                            <div className="text-xs text-white">
-                              Saved {new Date(savedBuild.savedAt).toLocaleDateString()}
-                            </div>
-                          </div>
+  <div className="text-lg font-bold text-cyan-400">
+    {formatCurrency(savedBuild.build.totalCost)}
+  </div>
+  <div className="flex items-center gap-2">
+    <span className="text-xs text-white">
+      Saved {new Date(savedBuild.savedAt).toLocaleDateString()}
+    </span>
+    <button
+  onClick={(e) => {
+    e.stopPropagation(); // prevent card click
+    onRemoveSavedBuild(savedBuild.id); // ✅ Call prop from App
+  }}
+  className="px-2 py-1 text-xs font-semibold text-red-400 bg-slate-800/50 border border-red-400 rounded-md hover:bg-red-400/20 hover:shadow-[0_0_10px_rgba(255,0,0,0.5)] transition-all"
+>
+  Remove
+</button>
+
+
+  </div>
+</div>
+
                         </CardContent>
                       </Card>
                     </motion.div>

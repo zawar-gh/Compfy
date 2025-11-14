@@ -402,6 +402,28 @@ const handleBackToRoleSelection = () => {
       toast.error("Failed to save build. Try again."); // ✅ changed
     }
   };
+  const handleRemoveSavedBuild = async (savedBuildId: string) => {
+  const token = authState.token ?? localStorage.getItem("access_token");
+  if (!token) {
+    toast.error("Not authenticated.");
+    return;
+  }
+
+  try {
+    // Call your API to remove the saved build
+    await fetch(`http://127.0.0.1:8000/api/saved-builds/${savedBuildId}/`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    setSavedBuilds((prev) => prev.filter((b) => b.id !== savedBuildId));
+    toast.success("Saved build removed!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to remove saved build.");
+  }
+};
+
 
   const handleBackToBuilds = () => {
     setCurrentScreen('builds');
@@ -715,6 +737,7 @@ const handleBackToRoleSelection = () => {
             onClose={() => setShowSavedBuildsModal(false)}
             savedBuilds={savedBuilds}
             onSelectBuild={handleBuildSelect}
+            onRemoveSavedBuild={handleRemoveSavedBuild} 
           />
         )}
 
