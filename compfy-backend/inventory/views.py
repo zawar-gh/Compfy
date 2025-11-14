@@ -61,7 +61,7 @@ class InventoryUploadView(APIView):
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not (file_obj.name.endswith('.csv') or file_obj.name.endswith('.xlsx')):
-            return Response({'error': 'Invalid file format. Only CSV or XLSX allowed.'},
+            return Response({'error': 'Invalid file format. Only XLSX or CSV allowed.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         # For now, handle CSV only (XLSX can be added later)

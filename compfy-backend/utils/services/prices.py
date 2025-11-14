@@ -1,5 +1,4 @@
 def get_market_price(component):
-    # Dummy prices
     prices = {
         "GPU": "Rs. 80,000",
         "CPU": "Rs. 50,000",

@@ -9,7 +9,7 @@ class InventoryItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('vendor', 'build')  # ensures no duplicate builds per vendor
+        unique_together = ('vendor', 'build')  #No duplicates per vendor
 
     def __str__(self):
         return f"{self.build.title} ({self.vendor.shop_name})"

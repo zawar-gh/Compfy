@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -114,7 +114,15 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
   };
 
   return (
+    <AnimatePresence>
+    {isOpen && (
     <Dialog open={isOpen} onOpenChange={onClose}>
+      <motion.div
+  className="fixed inset-0 bg-black/50"
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  exit={{ opacity: 0 }}
+/>
       <DialogContent className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-8 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] text-gray-300">
         <motion.div className="flex flex-col space-y-4">
           <DialogTitle className="text-white">Authentication</DialogTitle>
@@ -174,5 +182,8 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
         </motion.div>
       </DialogContent>
     </Dialog>
+      )}
+  </AnimatePresence>
+
   );
 }

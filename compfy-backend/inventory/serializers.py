@@ -33,7 +33,6 @@ class InventoryItemUpdateSerializer(serializers.ModelSerializer):
         build = instance.build
         request_data = self.context['request'].data
         
-        # Update build fields if provided
         if 'cpu' in request_data:
             build.cpu = request_data['cpu']
         if 'gpu' in request_data:

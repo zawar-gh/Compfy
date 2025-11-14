@@ -1,6 +1,10 @@
 // src/App.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import toast from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
+
+//Types imports
 import {
   CategoryType,
   IntensityType,
@@ -13,6 +17,7 @@ import {
   SavedBuild,
 } from './types';
 
+//Components Imports
 import RequirementSelection from './components/RequirementSelection';
 import ElectricityModal from './components/ElectricityModal';
 import RecommendedBuilds from './components/RecommendedBuilds';
@@ -23,18 +28,15 @@ import RoleSelection from './components/RoleSelection';
 import VendorDashboard from './components/VendorDashboard';
 import Header from './components/Header';
 import SavedBuildsModal from './components/SavedBuildsModal';
-import { ImageWithFallback } from './components/figma/ImageWithFallback';
-import { getBuilds } from './api/builds';
-import { signup, login } from './api/auth';
+import ProfileModal from './components/ProfileModal';
 import { categories } from './data/mockData';
+
+//APIs imports
+import { getBuilds } from './api/builds';
 import { registerShop } from './services/api';
 import { saveBuild as saveBuildAPI, getSavedBuilds } from "./api/savedBuilds";
-import ProfileModal from './components/ProfileModal';
-import toast from 'react-hot-toast';
-import { Toaster } from 'react-hot-toast';
 
-// removed unused getShops import to avoid confusion
-
+//App states and Screens
 type AppScreen =
   | 'auth'
   | 'role-selection'
@@ -44,6 +46,7 @@ type AppScreen =
   | 'price-editor'
   | 'vendor-dashboard';
 
+//Root Function
 export default function App() {
   // ------ normalize helper ------
   const normalizeVendor = (v: any): Vendor | null => {
@@ -60,10 +63,9 @@ export default function App() {
     } as Vendor;
   };
 
-  // optional: which form tab to show when opening AuthModal
+//State Variables
+   // Authentication state
   const [authModalMode, setAuthModalMode] = useState<'login'|'signup'>('signup');
-
-  // Authentication state
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
@@ -387,17 +389,17 @@ const handleBackToRoleSelection = () => {
   const handleSaveBuild = async (build: PCBuild) => {
     const token = authState.token ?? localStorage.getItem("access_token");
     if (!token) {
-      alert("Please log in to save builds.");
+      toast.error("Please log in to save builds."); // ✅ changed
       return;
     }
 
     try {
       const saved = await saveBuildAPI(build, token);
       setSavedBuilds((prev) => [...prev, saved]);
-      alert("✅ Build saved successfully!");
+      toast.success("Build saved successfully!"); // ✅ changed
     } catch (err) {
       console.error("Save build failed:", err);
-      alert("❌ Failed to save build. Try again.");
+      toast.error("Failed to save build. Try again."); // ✅ changed
     }
   };
 

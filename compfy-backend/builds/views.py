@@ -29,7 +29,7 @@ class SavedBuildView(viewsets.ModelViewSet):
         return SavedBuild.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        print("🧩 Incoming data:", request.data)
+        print(" Incoming data:", request.data)
         build_id = request.data.get("build")
         user = request.user
 

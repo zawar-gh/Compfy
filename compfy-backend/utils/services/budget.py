@@ -1,5 +1,4 @@
 def optimize_budget(budget):
-    # Dummy suggestions
     return {
         "budget": budget,
         "suggested_build": {

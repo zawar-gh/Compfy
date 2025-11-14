@@ -22,5 +22,6 @@ urlpatterns = [
     path('api/utils/', include('utils.urls')),
     path("api/", include("vendors.urls")),  # make sure vendors app is included
     path('api/inventory/', include('inventory.urls')),
+    path('api/', include('chatbot.urls')),
 
 ]
