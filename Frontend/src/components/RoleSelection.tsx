@@ -11,6 +11,7 @@ interface RoleSelectionProps {
 
 export default function RoleSelection({ onSelectRole }: RoleSelectionProps) {
   return (
+    
     <div className="max-w-4xl mx-auto px-8">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -18,12 +19,12 @@ export default function RoleSelection({ onSelectRole }: RoleSelectionProps) {
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
-        <h2 className="text-2xl font-bold text-white mb-4">
+        <h2 className="text-3xl font-bold text-white">
           How can we help you today?
         </h2>
       </motion.div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-6">
         {/* Customer Role */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}

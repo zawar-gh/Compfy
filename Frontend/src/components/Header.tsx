@@ -80,8 +80,6 @@ export default function Header({
             <DropdownMenuContent 
               align="end" 
               className="w-56 cyber-card border-cyan-500/30 bg-slate-900/95">
-             
-              
               {/* Use the App-level onEditProfile handler */}
               <DropdownMenuItem 
                 onClick={onEditProfile}

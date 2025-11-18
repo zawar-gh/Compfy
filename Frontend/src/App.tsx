@@ -555,20 +555,12 @@ const handleBackToRoleSelection = () => {
 
       {(currentScreen === 'auth' || currentScreen === 'role-selection') && (
   <motion.div
-    className="flex flex-col items-center space-y-4 mt-20"
+    className="flex flex-col items-center space-y-6 mt-30"
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.6 }}
   >
-    {/* Logo */}
-    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-      Compfy
-    </h1>
-
-    {/* Tagline */}
-    <p className="text-l text-gray-300">
-      Build your PC Comfortably
-    </p>
+    
   </motion.div>
 )}
 
@@ -584,7 +576,15 @@ const handleBackToRoleSelection = () => {
             transition={{ duration: 0.5, ease: 'easeInOut' }}
             className="flex items-center justify-center min-h-[400px] px-4"
           >
-            <div className="flex flex-col items-center space-y-6 w-full max-w-md">
+            <div className="flex flex-col items-center w-full max-w-md">
+              {/* Logo */}
+    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
+      Compfy
+    </h1>
+    {/* Tagline */}
+    <p className="text-l font-bold text-gray-300 mb-12">
+      Build your PC Comfortably
+    </p>
               <h1 className="text-4xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
                 Begin your Digital journey
               </h1>
