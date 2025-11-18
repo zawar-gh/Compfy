@@ -91,7 +91,7 @@ export default function BuyBuildModal({ isOpen, onClose, build, user }: BuyBuild
         <DialogContent className="sm:max-w-md cyber-card border-green-500/30 bg-slate-900/95">
           <DialogTitle className="sr-only">Purchase Successful</DialogTitle>
           <DialogDescription className="sr-only">
-            Your purchase has been completed successfully
+            Your order has been placed successfully
           </DialogDescription>
           
           <motion.div
@@ -107,9 +107,6 @@ export default function BuyBuildModal({ isOpen, onClose, build, user }: BuyBuild
             <p className="text-gray-300 text-sm mb-4">
               Your order has been placed successfully. You will receive delivery updates via SMS.
             </p>
-            <div className="text-xs text-gray-400">
-              Closing automatically...
-            </div>
           </motion.div>
         </DialogContent>
       </Dialog>
@@ -156,7 +153,7 @@ export default function BuyBuildModal({ isOpen, onClose, build, user }: BuyBuild
             {build.vendor && (
               <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
                 <MapPin className="w-3 h-3" />
-                <span>From: {build.city}</span>
+                <span>From: {build.vendor.address}</span>
               </div>
             )}
           </div>
@@ -170,9 +167,7 @@ export default function BuyBuildModal({ isOpen, onClose, build, user }: BuyBuild
           <div className="space-y-4">
             {/* Receiver Section */}
             <div>
-              <h3 className="font-semibold text-white mb-3">Delivery Information</h3>
-              
-              <div className="space-y-3">
+                <div className="space-y-3">
                 <div className="space-y-2">
                   <Label htmlFor="receiverAddress" className="text-gray-300">Delivery Address</Label>
                   <div className="relative">
@@ -247,7 +242,7 @@ export default function BuyBuildModal({ isOpen, onClose, build, user }: BuyBuild
               variant="outline"
               onClick={handleClose}
               disabled={isProcessing}
-              className="flex-1 text-gray-200 hover:text-white border-slate-600/50 hover:border-slate-500"
+              className="flex-1 neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50"
             >
               Cancel
             </Button>

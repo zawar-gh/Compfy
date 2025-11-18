@@ -79,12 +79,8 @@ export default function Header({
             
             <DropdownMenuContent 
               align="end" 
-              className="w-56 cyber-card border-cyan-500/30 bg-slate-900/95"
-            >
-              {/* User Section */}
-              <div className="px-2 py-1.5">
-                <p className="text-xs text-gray-400 uppercase tracking-wider">User Settings</p>
-              </div>
+              className="w-56 cyber-card border-cyan-500/30 bg-slate-900/95">
+             
               
               {/* Use the App-level onEditProfile handler */}
               <DropdownMenuItem 

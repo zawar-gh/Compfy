@@ -49,9 +49,6 @@ export default function ProfileModal({
           transition={{ duration: 0.3 }}
         >
           <DialogTitle className="text-2xl font-bold text-gray-300">Profile</DialogTitle>
-          <DialogDescription className="text-gray-400 text-center">
-            View your account details below
-          </DialogDescription>
 
           {/* 👤 User Info */}
           <div className="flex flex-col space-y-2 w-full text-gray-300">
@@ -66,7 +63,7 @@ export default function ProfileModal({
           {/* 🏪 Shop Settings (show if vendor provided) */}
           {vendor && (
             <div className="flex flex-col space-y-2 w-full text-gray-300 border-t border-cyan-500/30 pt-4 mt-2">
-              <p className="text-sm text-cyan-400 uppercase tracking-wide mb-1">Shop Settings</p>
+              <p className="text-sm text-cyan-400 uppercase tracking-wide mb-1">Shop Details</p>
 
               <div className="flex items-center gap-2">
                 <Store className="w-4 h-4 text-purple-400" />
