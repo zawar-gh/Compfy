@@ -578,6 +578,10 @@ const handleBackToRoleSelection = () => {
           >
             <div className="flex flex-col items-center w-full max-w-md">
               {/* Logo */}
+              <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-12">
+    </h1>
+    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-12">
+    </h1>
     <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
       Compfy
     </h1>

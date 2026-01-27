@@ -61,6 +61,8 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
+        <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-12">
+    </h1>
         <h1 className="text-3xl font-bold text-white mb-4">
           Hello vendor, this is your virtual store
         </h1>

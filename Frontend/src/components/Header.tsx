@@ -38,7 +38,6 @@ export default function Header({
   savedBuilds,
   onShowSavedBuilds,
   onEditProfile,
-  onEditVendorProfile,
   onDeleteProfile,
   onLogout,
   isCompact = false 

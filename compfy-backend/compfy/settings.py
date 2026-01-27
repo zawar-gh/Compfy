@@ -71,12 +71,15 @@ WSGI_APPLICATION = 'compfy.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'compfy_db',       # database name
-        'USER': 'compfy_user',     # db user
-        'PASSWORD': 'compfy_pass', # db password
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'USER': 'zawar',     # db user
+        'PASSWORD': '@Zawar4078', # db password
+        'HOST': 'zawar.mysql.pythonanywhere-services.com',
+        'PORT': '3306',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
