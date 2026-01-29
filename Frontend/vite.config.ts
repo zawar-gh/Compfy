@@ -3,20 +3,16 @@ import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
 export default defineConfig({
-  base: './', // fixes 404 / white page
+  base: '/', // Important: absolute path for Vercel
   plugins: [react()],
   resolve: {
-    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
-      '@': path.resolve(__dirname, './src'), // your src alias only
+      '@': path.resolve(__dirname, './src'),
     },
   },
   build: {
     target: 'esnext',
-    outDir: 'build', // must match vercel.json
-  },
-  server: {
-    port: 3000,
-    open: true,
-  },
+    outDir: 'build',
+    emptyOutDir: true
+  }
 });

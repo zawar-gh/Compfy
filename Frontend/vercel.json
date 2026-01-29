@@ -3,7 +3,7 @@
     {
       "src": "Frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { 
+      "config": {
         "distDir": "build",
         "installCommand": "npm install"
       }
