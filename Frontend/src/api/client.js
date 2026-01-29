@@ -1,18 +1,25 @@
 import axios from "axios";
 
-const API = process.env.REACT_APP_API_BASE_URL || "http://127.0.0.1:8000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!API_BASE_URL) {
+  throw new Error("VITE_API_URL is not defined");
+}
 
 const client = axios.create({
-  baseURL: API,
+  baseURL: API_BASE_URL,
   timeout: 10000,
 });
 
-client.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+client.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default client;

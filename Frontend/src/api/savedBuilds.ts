@@ -1,9 +1,12 @@
-import { API_BASE } from "./config";
+import API_BASE_URL from "./config";
 import { PCBuild, SavedBuild } from "../types";
 
 // --- Save a new build to user's saved builds ---
-export async function saveBuild(build: PCBuild, token: string): Promise<SavedBuild> {
-  const response = await fetch(`${API_BASE}/builds/saved-builds/`, {
+export async function saveBuild(
+  build: PCBuild,
+  token: string
+): Promise<SavedBuild> {
+  const response = await fetch(`${API_BASE_URL}builds/saved-builds/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -21,8 +24,10 @@ export async function saveBuild(build: PCBuild, token: string): Promise<SavedBui
 
 // --- Fetch all saved builds for the current user ---
 export async function getSavedBuilds(token: string): Promise<SavedBuild[]> {
-  const response = await fetch(`${API_BASE}/builds/saved-builds/`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const response = await fetch(`${API_BASE_URL}builds/saved-builds/`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!response.ok) {
@@ -33,7 +38,7 @@ export async function getSavedBuilds(token: string): Promise<SavedBuild[]> {
 
   return data.map((item: any) => ({
     ...item,
-    savedAt: item.saved_at, // convert snake_case → camelCase
+    savedAt: item.saved_at, // snake_case → camelCase
   }));
 }
 
@@ -46,7 +51,7 @@ export async function saveBuildIfNotSaved(
 
   const alreadySaved = savedBuilds.some((b) => b.build === build.id);
   if (alreadySaved) {
-    console.log("Build is already saved, skipping save.");
+    console.log("Build already saved, skipping.");
     return null;
   }
 
