@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { User as UserType } from '../types';
+import client from '../api/client'; // ✅ Use your centralized client
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,8 +13,6 @@ interface AuthModalProps {
   onLogin: (user: UserType, token: string) => void;
   onSignup: (user: UserType, token: string) => void;
 }
-
-const API_BASE = "http://127.0.0.1:8000/api";
 
 export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthModalProps) {
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
@@ -30,23 +29,15 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
     }
 
     setIsLoading(true);
+    setErrors({});
     try {
-      const response = await fetch(`${API_BASE}/auth/login/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: loginForm.username,
-          password: loginForm.password,
-        }),
+      // ✅ Use client instead of fetch
+      const response = await client.post("/api/auth/login/", {
+        username: loginForm.username,
+        password: loginForm.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrors({ general: data?.username?.[0] || data?.error || "Login failed" });
-        return;
-      }
-
+      const data = response.data;
       const token = data.access;
 
       const user: UserType = {
@@ -57,11 +48,13 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
         createdAt: data.user?.created_at || '',
       };
 
-      localStorage.setItem("token", token);
+      // ✅ Use "access_token" to match App.tsx logic
+      localStorage.setItem("access_token", token);
       onLogin(user, token);
       onClose();
-    } catch (err) {
-      setErrors({ general: "Login failed. Please try again." });
+    } catch (err: any) {
+      const msg = err.response?.data?.detail || err.response?.data?.error || "Login failed";
+      setErrors({ general: msg });
     } finally {
       setIsLoading(false);
     }
@@ -75,26 +68,19 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
     }
 
     setIsLoading(true);
+    setErrors({});
     try {
-      const response = await fetch(`${API_BASE}/auth/signup/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: signupForm.username,
-          email: signupForm.email,
-          password: signupForm.password,
-          role: signupForm.role,
-        }),
+      // ✅ Use client instead of fetch
+      const response = await client.post("/api/auth/signup/", {
+        username: signupForm.username,
+        email: signupForm.email,
+        password: signupForm.password,
+        role: signupForm.role,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrors({ general: data?.username?.[0] || data?.email?.[0] || data?.error || "Signup failed" });
-        return;
-      }
-
+      const data = response.data;
       const token = data.access;
+      
       const user: UserType = {
         id: data.user?.id || '',
         username: data.user?.username || '',
@@ -103,11 +89,13 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
         createdAt: '',
       };
 
-      localStorage.setItem("token", token);
+      // ✅ Synchronize key name
+      localStorage.setItem("access_token", token);
       onSignup(user, token);
       onClose();
-    } catch (err) {
-      setErrors({ general: "Signup failed. Please try again." });
+    } catch (err: any) {
+      const msg = err.response?.data?.username?.[0] || err.response?.data?.email?.[0] || "Signup failed";
+      setErrors({ general: msg });
     } finally {
       setIsLoading(false);
     }
@@ -115,75 +103,76 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
 
   return (
     <AnimatePresence>
-    {isOpen && (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <motion.div
-  className="fixed inset-0 bg-black/50"
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  exit={{ opacity: 0 }}
-/>
-      <DialogContent className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-8 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] text-gray-300">
-        <motion.div className="flex flex-col space-y-4">
-          <DialogTitle className="text-white">Authentication</DialogTitle>
+      {isOpen && (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+          <DialogContent className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-8 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] text-gray-300">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              className="flex flex-col space-y-4"
+            >
+              <DialogTitle className="text-white text-2xl font-mono">Authentication</DialogTitle>
 
-          {errors.general && <p className="text-red-500">{errors.general}</p>}
+              {errors.general && (
+                <div className="p-3 rounded bg-red-500/10 border border-red-500/50 text-red-500 text-sm">
+                  {errors.general}
+                </div>
+              )}
 
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
-            <TabsList className="bg-gray-800 rounded-lg border border-cyan-500/30">
-              <TabsTrigger value="login" className="text-cyan-400">Login</TabsTrigger>
-              <TabsTrigger value="signup" className="text-cyan-400">Sign Up</TabsTrigger>
-            </TabsList>
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
+                <TabsList className="bg-gray-800/50 w-full mb-6">
+                  <TabsTrigger value="login" className="flex-1">Login</TabsTrigger>
+                  <TabsTrigger value="signup" className="flex-1">Sign Up</TabsTrigger>
+                </TabsList>
 
-            <TabsContent value="login" className="flex flex-col space-y-4">
-              <Input
-                placeholder="Username"
-                value={loginForm.username}
-                onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
-              />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={loginForm.password}
-                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
-              />
-              <Button onClick={handleLogin} disabled={isLoading} className="w-full neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50">
-                {isLoading ? "Logging in..." : "Login"}
-              </Button>
-            </TabsContent>
+                <TabsContent value="login" className="space-y-4">
+                  <Input
+                    placeholder="Username"
+                    value={loginForm.username}
+                    onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                    className="bg-gray-800/50 border-cyan-500/30 focus:border-cyan-400"
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                    className="bg-gray-800/50 border-cyan-500/30 focus:border-cyan-400"
+                  />
+                  <Button onClick={handleLogin} disabled={isLoading} className="w-full bg-cyan-600 hover:bg-cyan-500">
+                    {isLoading ? "Validating..." : "Enter System"}
+                  </Button>
+                </TabsContent>
 
-            <TabsContent value="signup" className="flex flex-col space-y-4">
-              <Input
-                placeholder="Username"
-                value={signupForm.username}
-                onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
-                className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
-              />
-              <Input
-                placeholder="Email"
-                value={signupForm.email}
-                onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
-              />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={signupForm.password}
-                onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
-              />
-              <Button onClick={handleSignup} disabled={isLoading} className="w-full neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50">
-                {isLoading ? "Signing up..." : "Sign Up"}
-              </Button>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </DialogContent>
-    </Dialog>
+                <TabsContent value="signup" className="space-y-4">
+                  <Input
+                    placeholder="Username"
+                    value={signupForm.username}
+                    onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
+                    className="bg-gray-800/50 border-cyan-500/30"
+                  />
+                  <Input
+                    placeholder="Email"
+                    value={signupForm.email}
+                    onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                    className="bg-gray-800/50 border-cyan-500/30"
+                  />
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={signupForm.password}
+                    onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                    className="bg-gray-800/50 border-cyan-500/30"
+                  />
+                  <Button onClick={handleSignup} disabled={isLoading} className="w-full bg-purple-600 hover:bg-purple-500">
+                    {isLoading ? "Initializing..." : "Create Account"}
+                  </Button>
+                </TabsContent>
+              </Tabs>
+            </motion.div>
+          </DialogContent>
+        </Dialog>
       )}
-  </AnimatePresence>
-
+    </AnimatePresence>
   );
 }

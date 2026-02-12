@@ -1,10 +1,9 @@
 // src/App.tsx
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import toast from 'react-hot-toast';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 
-//Types imports
+// Types imports
 import {
   CategoryType,
   IntensityType,
@@ -17,7 +16,7 @@ import {
   SavedBuild,
 } from './types';
 
-//Components Imports
+// Components Imports
 import RequirementSelection from './components/RequirementSelection';
 import ElectricityModal from './components/ElectricityModal';
 import RecommendedBuilds from './components/RecommendedBuilds';
@@ -31,12 +30,13 @@ import SavedBuildsModal from './components/SavedBuildsModal';
 import ProfileModal from './components/ProfileModal';
 import { categories } from './data/mockData';
 
-//APIs imports
+// APIs imports
 import { getBuilds } from './api/builds';
 import { registerShop } from './services/api';
 import { saveBuild as saveBuildAPI, getSavedBuilds } from "./api/savedBuilds";
+import client from './api/client'; // ✅ Centralized axios client
 
-//App states and Screens
+// App states and Screens
 type AppScreen =
   | 'auth'
   | 'role-selection'
@@ -46,9 +46,9 @@ type AppScreen =
   | 'price-editor'
   | 'vendor-dashboard';
 
-//Root Function
+// Root Function
 export default function App() {
-  // ------ normalize helper ------
+  // ------ Normalize Helper ------
   const normalizeVendor = (v: any): Vendor | null => {
     if (!v) return null;
     return {
@@ -63,9 +63,9 @@ export default function App() {
     } as Vendor;
   };
 
-//State Variables
-   // Authentication state
-  const [authModalMode, setAuthModalMode] = useState<'login'|'signup'>('signup');
+  // State Variables
+  // Authentication state
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('signup');
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
@@ -126,32 +126,24 @@ export default function App() {
 
   // Authentication: handleLogin
   const handleLogin = async (user: User, token: string) => {
-    // persist token
+    // persist token first so client interceptor picks it up
     localStorage.setItem("access_token", token);
 
     try {
-      // Fetch full user info from backend
-      const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch user");
-      const data = await res.json();
+      // ✅ FIX: Use client.get instead of fetch
+      const res = await client.get("/api/users/current/");
+      const data = res.data; // Axios returns data directly
 
       // Try to fetch the vendor for logged-in user using dedicated endpoint
       let vendorRaw: any = null;
       try {
-        const vendorRes = await fetch("http://127.0.0.1:8000/api/vendor/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (vendorRes.ok) {
-          vendorRaw = await vendorRes.json();
-          // If API returns an array, find the one for current user
-          if (Array.isArray(vendorRaw)) {
-            vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === data.user.id) || null;
-          }
-        } else {
-          // fallback: use vendor info from /users/current/ if present
-          vendorRaw = Array.isArray(data.vendor) ? data.vendor[0] : data.vendor || null;
+        // ✅ FIX: Use client.get
+        const vendorRes = await client.get("/api/vendor/");
+        vendorRaw = vendorRes.data;
+
+        // If API returns an array, find the one for current user
+        if (Array.isArray(vendorRaw)) {
+          vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === data.user.id) || null;
         }
       } catch (e) {
         // fallback to whatever /users/current/ provided
@@ -167,19 +159,15 @@ export default function App() {
         token,
       });
 
-      // Navigate depending on vendor presence
-      if (vendor) {
-        setCurrentScreen("role-selection");
-      } else {
-        setCurrentScreen("role-selection");
-      }
+      setCurrentScreen("role-selection");
+
     } catch (err) {
       console.error("Login fetch failed:", err);
       toast.error("Failed to log in. Try again.");
     }
   };
 
-  // Centralized logout (clears everything and shows auth screen)
+  // Centralized logout
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     setAuthState({ isAuthenticated: false, user: null, vendor: null, token: null });
@@ -188,17 +176,12 @@ export default function App() {
     setElectricitySettings(null);
     setSelectedBuild(null);
     setSavedBuilds([]);
-    // Make sure we move to auth screen
     setCurrentScreen('auth');
-    // open auth modal in signup mode so user sees sign up quickly (optional)
     setAuthModalMode('signup');
   };
 
-  // Call this when the account was deleted server-side (Header currently calls deleteAccount and then onDeleteProfile)
   const handleAccountDeleted = () => {
-    // close profile modal if open
     setShowProfileModal(false);
-    // clear auth locally
     localStorage.removeItem("access_token");
     setAuthState({ isAuthenticated: false, user: null, vendor: null, token: null });
     setSelectedCategory(null);
@@ -207,8 +190,6 @@ export default function App() {
     setSelectedBuild(null);
     setSavedBuilds([]);
     toast.success("Profile deleted successfully!");
-
-    // ensure we show the auth screen and open the signup modal
     setCurrentScreen('auth');
     setAuthModalMode('signup');
   };
@@ -220,24 +201,19 @@ export default function App() {
       if (!token) return;
 
       try {
-        // Fetch current logged-in user
-        const res = await fetch("http://127.0.0.1:8000/api/users/current/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch user");
-        const data = await res.json();
+        // ✅ FIX: Use client.get instead of fetch
+        const res = await client.get("/api/users/current/");
+        const data = res.data;
 
-        // Fetch the vendor tied to this user using dedicated endpoint
+        // Fetch the vendor tied to this user
         let vendorRaw: any = null;
         try {
-          const vendorRes = await fetch("http://127.0.0.1:8000/api/vendor/", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (vendorRes.ok) {
-            vendorRaw = await vendorRes.json();
-            if (Array.isArray(vendorRaw)) {
-              vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === data.user.id) || null;
-            }
+          // ✅ FIX: Use client.get
+          const vendorRes = await client.get("/api/vendor/");
+          vendorRaw = vendorRes.data;
+          
+          if (Array.isArray(vendorRaw)) {
+            vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === data.user.id) || null;
           }
         } catch (e) {
           console.warn("Failed to fetch /api/vendor/:", e);
@@ -252,12 +228,8 @@ export default function App() {
           token,
         });
 
-        // Navigate depending on vendor presence
-        if (vendor) {
-          setCurrentScreen("role-selection");
-        } else {
-          setCurrentScreen("role-selection");
-        }
+        setCurrentScreen("role-selection");
+        
       } catch (err) {
         console.error("Auth restore failed:", err);
         localStorage.removeItem("access_token");
@@ -265,31 +237,25 @@ export default function App() {
     };
 
     restoreAuth();
-    // run once on mount
   }, []);
 
   // --------- Fetch Saved Builds After Login or Restore ----------
-useEffect(() => {
-  const fetchSavedBuilds = async () => {
-    const token = authState.token ?? localStorage.getItem("access_token");
-    if (!token || !authState.isAuthenticated) return;
+  useEffect(() => {
+    const fetchSavedBuilds = async () => {
+      const token = authState.token ?? localStorage.getItem("access_token");
+      if (!token || !authState.isAuthenticated) return;
 
-    try {
-      const builds = await getSavedBuilds(token);
-      setSavedBuilds(builds);
-    } catch (err) {
-      console.error("Failed to fetch saved builds:", err);
-    }
-  };
-const handleBackToRoleSelection = () => {
-  setCurrentScreen('role-selection');
-  setSelectedCategory(null);
-  setSelectedIntensity(null);
-  setElectricitySettings(null);
-};
-
-  fetchSavedBuilds();
-}, [authState.isAuthenticated]);
+      try {
+        // getSavedBuilds uses axios internally via api/savedBuilds.ts? 
+        // Assuming yes, but if it takes token, passing it is fine.
+        const builds = await getSavedBuilds(token);
+        setSavedBuilds(builds);
+      } catch (err) {
+        console.error("Failed to fetch saved builds:", err);
+      }
+    };
+    fetchSavedBuilds();
+  }, [authState.isAuthenticated, authState.token]);
 
   // Role selection
   const handleRoleSelect = (role: UserRole) => {
@@ -317,24 +283,20 @@ const handleBackToRoleSelection = () => {
     try {
       const payload = {
         ...shopData,
-        user: authState.user.id, // attach user link (safe)
+        user: authState.user.id,
       };
 
       const registeredVendor = await registerShop(payload, token);
 
-      // Normalize vendor fields (registeredVendor may be raw Django JSON)
-      // If backend returns the vendor created, normalize; else attempt to fetch /api/vendor/
+      // Normalize vendor fields
       let vendorRaw = registeredVendor;
       if (!vendorRaw || !vendorRaw.id) {
         try {
-          const vendorRes = await fetch("http://127.0.0.1:8000/api/vendor/", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (vendorRes.ok) {
-            vendorRaw = await vendorRes.json();
-            if (Array.isArray(vendorRaw)) {
-              vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === authState.user!.id) || vendorRaw;
-            }
+          // ✅ FIX: Use client.get fallback
+          const vendorRes = await client.get("/api/vendor/");
+          vendorRaw = vendorRes.data;
+          if (Array.isArray(vendorRaw)) {
+            vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === authState.user!.id) || vendorRaw;
           }
         } catch (e) {
           console.warn("Failed to refetch vendor after register:", e);
@@ -360,70 +322,63 @@ const handleBackToRoleSelection = () => {
   };
 
   const handleElectricitySubmit = (settings: ElectricitySettings) => {
-  setElectricitySettings(settings);
-  setShowElectricityModal(false);
+    setElectricitySettings(settings);
+    setShowElectricityModal(false);
 
-  if (isFromSavedBuild) {
-    setCurrentScreen("details");
-    setIsFromSavedBuild(false); // reset flag
-  } else {
-    setCurrentScreen("builds");
-  }
-};
-
+    if (isFromSavedBuild) {
+      setCurrentScreen("details");
+      setIsFromSavedBuild(false);
+    } else {
+      setCurrentScreen("builds");
+    }
+  };
 
   const handleBuildSelect = (build: PCBuild, fromSaved = false) => {
-  setSelectedBuild(build);
-  setIsFromSavedBuild(fromSaved);
+    setSelectedBuild(build);
+    setIsFromSavedBuild(fromSaved);
 
-  if (fromSaved) {
-    // ⚡ If it’s a saved build, show electricity modal first
-    setShowElectricityModal(true);
-  } else {
-    // Otherwise, go directly to details
-    setCurrentScreen("details");
-  }
-};
-
+    if (fromSaved) {
+      setShowElectricityModal(true);
+    } else {
+      setCurrentScreen("details");
+    }
+  };
 
   const handleSaveBuild = async (build: PCBuild) => {
     const token = authState.token ?? localStorage.getItem("access_token");
     if (!token) {
-      toast.error("Please log in to save builds."); // ✅ changed
+      toast.error("Please log in to save builds.");
       return;
     }
 
     try {
       const saved = await saveBuildAPI(build, token);
       setSavedBuilds((prev) => [...prev, saved]);
-      toast.success("Build saved successfully!"); // ✅ changed
+      toast.success("Build saved successfully!");
     } catch (err) {
       console.error("Save build failed:", err);
-      toast.error("Failed to save build. Try again."); // ✅ changed
+      toast.error("Failed to save build. Try again.");
     }
   };
+
   const handleRemoveSavedBuild = async (savedBuildId: string) => {
-  const token = authState.token ?? localStorage.getItem("access_token");
-  if (!token) {
-    toast.error("Not authenticated.");
-    return;
-  }
+    const token = authState.token ?? localStorage.getItem("access_token");
+    if (!token) {
+      toast.error("Not authenticated.");
+      return;
+    }
 
-  try {
-    // Call your API to remove the saved build
-    await fetch(`http://127.0.0.1:8000/api/builds/saved-builds/${savedBuildId}/`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      // ✅ FIX: Use client.delete instead of fetch
+      await client.delete(`/api/builds/saved-builds/${savedBuildId}/`);
 
-    setSavedBuilds((prev) => prev.filter((b) => b.id !== savedBuildId));
-    toast.success("Saved build removed!");
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to remove saved build.");
-  }
-};
-
+      setSavedBuilds((prev) => prev.filter((b) => b.id !== savedBuildId));
+      toast.success("Saved build removed!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to remove saved build.");
+    }
+  };
 
   const handleBackToBuilds = () => {
     setCurrentScreen('builds');
@@ -446,7 +401,6 @@ const handleBackToRoleSelection = () => {
 
   const handleOpenPriceEditor = () => setCurrentScreen('price-editor');
   const handleBackFromPriceEditor = () => setCurrentScreen('details');
-  const handleSaveBuilds = (updatedBuilds: PCBuild[]) => setBuilds(updatedBuilds);
 
   // Filter builds
   const getFilteredBuilds = (): PCBuild[] => {
@@ -459,54 +413,36 @@ const handleBackToRoleSelection = () => {
 
   // Theme helpers
   const getThemeClasses = () => 'bg-gradient-to-br from-slate-900 via-gray-900 to-black';
-  const getTextColorClasses = () => 'text-gray-300';
-
-  const getHeaderGradient = () => {
-    if (!selectedCategory) return 'from-blue-600 to-cyan-600';
-    switch (selectedCategory) {
-      case 'gaming':
-        return 'from-cyan-400 to-blue-500';
-      case 'editing':
-        return 'from-blue-600 to-indigo-600';
-      case 'office':
-        return 'from-slate-600 to-blue-600';
-      default:
-        return 'from-blue-600 to-cyan-600';
-    }
-  };
 
   // Redirect to auth if not authenticated
   useEffect(() => {
     if (!authState.isAuthenticated && currentScreen !== 'auth') {
       setCurrentScreen('auth');
     }
-    // intentionally depend on authState.isAuthenticated and currentScreen
   }, [authState.isAuthenticated, currentScreen]);
 
   if (error)
     return <div className="p-8 text-red-500 text-center">{error}</div>;
 
-
- if (builds.length === 0 && !error) {
-  return (
-    <motion.div
-      className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-    >
-      <div className="relative w-24 h-24 mb-8">
-        <div className="absolute inset-0 border-4 border-cyan-400 rounded-full animate-ping opacity-40" />
-        <div className="absolute inset-0 border-4 border-cyan-500 rounded-full border-t-transparent animate-spin" />
-      </div>
-      <h2 className="text-2xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
-        Loading Builds...
-      </h2>
-      <p className="text-gray-400 mt-2">Please wait a moment</p>
-    </motion.div>
-  );
-}
-
+  if (builds.length === 0 && !error) {
+    return (
+      <motion.div
+        className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-black"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="relative w-24 h-24 mb-8">
+          <div className="absolute inset-0 border-4 border-cyan-400 rounded-full animate-ping opacity-40" />
+          <div className="absolute inset-0 border-4 border-cyan-500 rounded-full border-t-transparent animate-spin" />
+        </div>
+        <h2 className="text-2xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600">
+          Loading Builds...
+        </h2>
+        <p className="text-gray-400 mt-2">Please wait a moment</p>
+      </motion.div>
+    );
+  }
 
   // ------------------- RENDER -------------------
   return (
@@ -540,30 +476,22 @@ const handleBackToRoleSelection = () => {
           savedBuilds={savedBuilds}
           onShowSavedBuilds={() => setShowSavedBuildsModal(true)}
           onEditProfile={() => setShowProfileModal(true)}
-          onEditVendorProfile={() => {}}
-          // <- PASS the centralized delete completion handler HERE
-          onDeleteProfile={() => {
-            // The Header component itself typically performs the server delete (deleteAccount)
-            // and then calls this prop after a successful delete. When this prop is invoked
-            // we close modals, clear auth and show the signup modal.
-            handleAccountDeleted();
-          }}
+          onEditVendorProfile={() => { }}
+          onDeleteProfile={handleAccountDeleted}
           onLogout={handleLogout}
           isCompact={currentScreen !== 'selection'}
         />
       )}
 
       {(currentScreen === 'auth' || currentScreen === 'role-selection') && (
-  <motion.div
-    className="flex flex-col items-center space-y-6 mt-30"
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-  >
-    
-  </motion.div>
-)}
-
+        <motion.div
+          className="flex flex-col items-center space-y-6 mt-30"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+        </motion.div>
+      )}
 
       {/* Screens */}
       <AnimatePresence mode="wait">
@@ -577,18 +505,13 @@ const handleBackToRoleSelection = () => {
             className="flex items-center justify-center min-h-[400px] px-4"
           >
             <div className="flex flex-col items-center w-full max-w-md">
-              {/* Logo */}
-              <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-12">
-    </h1>
-    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-12">
-    </h1>
-    <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
-      Compfy
-    </h1>
-    {/* Tagline */}
-    <p className="text-l font-bold text-gray-300 mb-12">
-      Build your PC Comfortably
-    </p>
+              <h1 className="text-6xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
+                Compfy
+              </h1>
+              {/* Tagline */}
+              <p className="text-l font-bold text-gray-300 mb-12">
+                Build your PC Comfortably
+              </p>
               <h1 className="text-4xl font-mono font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
                 Begin your Digital journey
               </h1>
@@ -679,9 +602,7 @@ const handleBackToRoleSelection = () => {
               user={authState.user}
               themeCategory={selectedCategory}
               onOpenPriceEditor={handleOpenPriceEditor}
-              isSaved={savedBuilds.some(b => b.id === selectedBuild.id)} // ✅ NEW
-
-
+              isSaved={savedBuilds.some(b => b.id === selectedBuild.id)}
             />
           </motion.div>
         )}
@@ -730,9 +651,6 @@ const handleBackToRoleSelection = () => {
             onClose={() => setShowAuthModal(false)}
             onLogin={handleLogin}
             onSignup={(user, token) => handleLogin(user, token)}
-            /* Note: if your AuthModal accepts an initial mode prop, you can pass authModalMode here.
-               I intentionally didn't change AuthModal's signature to avoid breaking anything; instead
-               we control which tab we want via authModalMode state and setShowAuthModal(true) accordingly. */
           />
         )}
         {showSavedBuildsModal && (
@@ -741,7 +659,7 @@ const handleBackToRoleSelection = () => {
             onClose={() => setShowSavedBuildsModal(false)}
             savedBuilds={savedBuilds}
             onSelectBuild={handleBuildSelect}
-            onRemoveSavedBuild={handleRemoveSavedBuild} 
+            onRemoveSavedBuild={handleRemoveSavedBuild}
           />
         )}
 
@@ -750,23 +668,22 @@ const handleBackToRoleSelection = () => {
             isOpen={showProfileModal}
             onClose={() => setShowProfileModal(false)}
             user={authState.user}
-            vendor={authState.vendor}  
+            vendor={authState.vendor}
             onLogout={handleLogout}
           />
         )}
       </AnimatePresence>
-      {/* ✅ Global Toast Notification System */}
-    <Toaster
-      position="top-center"
-      toastOptions={{
-       style: {
-         background: '#0f172a',
-         color: '#e2e8f0',
-         border: '1px solid #22d3ee',
-        },
-    }}
-/>
-
+      {/* Global Toast Notification System */}
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#0f172a',
+            color: '#e2e8f0',
+            border: '1px solid #22d3ee',
+          },
+        }}
+      />
     </div>
   );
 }

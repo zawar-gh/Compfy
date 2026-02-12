@@ -108,13 +108,18 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = True  # for development
+CORS_ALLOW_ALL_ORIGINS = False
 
-# In production, use:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",  # React dev server
-#     "https://your-frontend.vercel.app",
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "https://compfy.vercel.app",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# ---------- CSRF ----------
+CSRF_TRUSTED_ORIGINS = [
+    "https://compfy.vercel.app",
+]
 
 # REST Framework
 REST_FRAMEWORK = {

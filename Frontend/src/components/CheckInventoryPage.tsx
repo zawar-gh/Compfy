@@ -28,8 +28,7 @@ import {
   AlertDialogTitle,
 } from './ui/alert-dialog';
 import { PCBuild, Vendor } from '../types';
-import { getInventory, updateInventory } from '../services/api';
-import { bulkUpdateInventory } from '../services/api';
+import { getInventory, bulkUpdateInventory, deleteBuild } from '../services/api';
 
 interface CheckInventoryPageProps {
   vendor: Vendor;
@@ -164,63 +163,52 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
   };
 
   const handleDeleteSelected = async () => {
-  const selectedIds = builds.filter(build => build.isSelected).map(b => b.id);
-  
-  // Separate temporary IDs from real database IDs
-  const realIds = selectedIds.filter(id => !id.toString().startsWith('temp-'));
-  
-  // Delete from backend (real builds only)
-  if (realIds.length > 0) {
-    try {
-      await Promise.all(
-        realIds.map(id => 
-          fetch(`http://127.0.0.1:8000/api/inventory/vendor/${vendor.id}/build/${id}/delete/`, {
-            method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            }
-          })
-        )
-      );
-      console.log("✅ Deleted from backend:", realIds);
-    } catch (err) {
-      console.error("❌ Failed to delete from backend:", err);
+    const selectedIds = builds.filter(build => build.isSelected).map(b => b.id);
+    
+    // Separate temporary IDs from real database IDs
+    const realIds = selectedIds.filter(id => !id.toString().startsWith('temp-'));
+    
+    if (realIds.length > 0) {
+      try {
+        setIsLoading(true);
+        await Promise.all(realIds.map(id => deleteBuild(vendor.id, id)));
+        toast.success(`Deleted ${realIds.length} builds from server`);
+      } catch (err) {
+        console.error("❌ Failed to delete from backend:", err);
+        toast.error("Failed to delete from server");
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }
-  
-  // Update local state (removes from UI)
-  setBuilds(prev => prev.filter(build => !build.isSelected));
-  setHasChanges(true); // ✅ THIS WAS MISSING!
-};
+    
+    // Update local state
+    setBuilds(prev => prev.filter(build => !build.isSelected));
+    setHasChanges(true);
+  };
 
 const handleDeleteAll = async () => {
-  const realIds = builds
-    .filter(b => !b.id.toString().startsWith('temp-'))
-    .map(b => b.id);
-  
-  // Delete from backend
-  if (realIds.length > 0) {
-    try {
-      await Promise.all(
-        realIds.map(id => 
-          fetch(`http://127.0.0.1:8000/api/inventory/vendor/${vendor.id}/build/${id}/delete/`, {
-            method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            }
-          })
-        )
-      );
-      console.log("✅ Deleted all from backend");
-    } catch (err) {
-      console.error("❌ Failed to delete all:", err);
+    const realIds = builds
+      .filter(b => !b.id.toString().startsWith('temp-'))
+      .map(b => b.id);
+    
+    if (realIds.length > 0) {
+      try {
+        setIsLoading(true);
+        // ✅ REPLACED: Clean API call using our axios client
+        await Promise.all(realIds.map(id => deleteBuild(vendor.id, id)));
+        toast.success("All inventory cleared from server");
+      } catch (err) {
+        console.error("❌ Failed to delete all:", err);
+        toast.error("Server error while clearing inventory");
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }
-  
-  setBuilds([]);
-  setHasChanges(true); // ✅ THIS WAS MISSING!
-  setShowDeleteAllDialog(false);
-};
+    
+    setBuilds([]);
+    setHasChanges(true); 
+    setShowDeleteAllDialog(false);
+  };
   
 //------Adding Builds Button--------
  const handleAddBuild = () => {
@@ -280,11 +268,12 @@ const mappedBuilds = inventoryArray.map((item: any) => ({
   name: item.name,
   totalCost: item.totalCost,
   components: {
-    cpu: { name: item.components?.cpu || "N/A" },
-    gpu: { name: item.components?.gpu || "N/A" },
-    ram: { name: item.components?.ram || "N/A" },
-    storage: { name: item.components?.storage || "N/A" },
-    psu: { name: item.components?.psu || "N/A" },
+    // This logic handles both strings and objects from the backend
+    cpu: { name: item.components?.cpu?.name || item.components?.cpu || "N/A" },
+    gpu: { name: item.components?.gpu?.name || item.components?.gpu || "N/A" },
+    ram: { name: item.components?.ram?.name || item.components?.ram || "N/A" },
+    storage: { name: item.components?.storage?.name || item.components?.storage || "N/A" },
+    psu: { name: item.components?.psu?.name || item.components?.psu || "N/A" },
   },
   isEditing: false,
   isSelected: false,
@@ -522,6 +511,7 @@ setBuilds(mappedBuilds);
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }
@@ -674,7 +664,9 @@ function BuildRow({
             >
               <X className="w-3 h-3" />
             </Button>
+            
           </div>
+          
         ) : (
           <Button
             size="sm"
@@ -687,7 +679,9 @@ function BuildRow({
         )}
       </td>
     </tr>
+    
   );
+  
 }
 
 interface InventoryItem {

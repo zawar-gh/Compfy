@@ -5,6 +5,10 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,)
 from users.views import RegisterView
+from django.http import JsonResponse
+
+def health(request):
+    return JsonResponse({"status": "ok"})
 
 
 urlpatterns = [
@@ -22,4 +26,7 @@ urlpatterns = [
     path('api/utils/', include('utils.urls')),
     path("api/", include("vendors.urls")),  # make sure vendors app is included
     path('api/inventory/', include('inventory.urls')),
+
+#Test Frontend
+    path("api/health/", health),
 ]
