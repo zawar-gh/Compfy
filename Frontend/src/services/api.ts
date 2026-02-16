@@ -6,13 +6,13 @@ import client from "../api/client"; // ✅ Use the centralized instance
 // Register a new shop/vendor
 export const registerShop = async (shopData: any) => {
   // client already handles the BaseURL and Auth Headers!
-  const res = await client.post("/api/vendor/", shopData); 
+  const res = await client.post("/vendor/", shopData); 
   return res.data;
 };
 
 // Get all shops
 export const getShops = async () => {
-  const res = await client.get("/api/vendor/");
+  const res = await client.get("/vendor/");
   return res.data;
 };
 
@@ -20,14 +20,14 @@ export const getShops = async () => {
 
 // Fetch inventory for a vendor/shop
 export const getInventory = async (vendorId: number) => {
-  const res = await client.get(`/api/inventory/${vendorId}/`);
+  const res = await client.get(`/inventory/${vendorId}/`);
   return res.data;
 };
 
 // Bulk update inventory
 export const bulkUpdateInventory = async (vendorId: number, builds: any[]) => {
   const res = await client.put(
-    `/api/inventory/${vendorId}/bulk-update/`,
+    `/inventory/${vendorId}/bulk-update/`,
     builds
   );
   return res.data;
@@ -38,7 +38,7 @@ export const uploadInventory = async (vendorId: number, file: File) => {
   const formData = new FormData();
   formData.append("file", file);
   
-  const res = await client.post(`/api/inventory/${vendorId}/upload/`, formData, {
+  const res = await client.post(`/inventory/${vendorId}/upload/`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -50,6 +50,6 @@ export const uploadInventory = async (vendorId: number, file: File) => {
 
 export const deleteBuild = async (vendorId: number, buildId: string | number) => {
   // ✅ No localhost here! It uses the 'client' instance we configured.
-  const res = await client.delete(`/api/inventory/vendor/${vendorId}/build/${buildId}/delete/`);
+  const res = await client.delete(`/inventory/vendor/${vendorId}/build/${buildId}/delete/`);
   return res.data;
 };
