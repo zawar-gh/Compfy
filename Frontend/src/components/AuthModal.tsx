@@ -32,7 +32,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
     setErrors({});
     try {
       // ✅ Use client instead of fetch
-      const response = await client.post("/api/auth/login/", {
+      const response = await client.post("/auth/login/", {
         username: loginForm.username,
         password: loginForm.password,
       });
@@ -71,7 +71,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
     setErrors({});
     try {
       // ✅ Use client instead of fetch
-      const response = await client.post("/api/auth/signup/", {
+      const response = await client.post("/auth/signup/", {
         username: signupForm.username,
         email: signupForm.email,
         password: signupForm.password,
