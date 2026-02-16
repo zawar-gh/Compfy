@@ -131,14 +131,14 @@ export default function App() {
 
     try {
       // ✅ FIX: Use client.get instead of fetch
-      const res = await client.get("/api/users/current/");
+      const res = await client.get("/users/current/");
       const data = res.data; // Axios returns data directly
 
       // Try to fetch the vendor for logged-in user using dedicated endpoint
       let vendorRaw: any = null;
       try {
         // ✅ FIX: Use client.get
-        const vendorRes = await client.get("/api/vendor/");
+        const vendorRes = await client.get("/vendor/");
         vendorRaw = vendorRes.data;
 
         // If API returns an array, find the one for current user
@@ -202,21 +202,21 @@ export default function App() {
 
       try {
         // ✅ FIX: Use client.get instead of fetch
-        const res = await client.get("/api/users/current/");
+        const res = await client.get("/users/current/");
         const data = res.data;
 
         // Fetch the vendor tied to this user
         let vendorRaw: any = null;
         try {
           // ✅ FIX: Use client.get
-          const vendorRes = await client.get("/api/vendor/");
+          const vendorRes = await client.get("/vendor/");
           vendorRaw = vendorRes.data;
           
           if (Array.isArray(vendorRaw)) {
             vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === data.user.id) || null;
           }
         } catch (e) {
-          console.warn("Failed to fetch /api/vendor/:", e);
+          console.warn("Failed to fetch /vendor/:", e);
         }
 
         const vendor = normalizeVendor(vendorRaw);
@@ -246,7 +246,7 @@ export default function App() {
       if (!token || !authState.isAuthenticated) return;
 
       try {
-        // getSavedBuilds uses axios internally via api/savedBuilds.ts? 
+        // getSavedBuilds uses axios internally via savedBuilds.ts? 
         // Assuming yes, but if it takes token, passing it is fine.
         const builds = await getSavedBuilds(token);
         setSavedBuilds(builds);
@@ -293,7 +293,7 @@ export default function App() {
       if (!vendorRaw || !vendorRaw.id) {
         try {
           // ✅ FIX: Use client.get fallback
-          const vendorRes = await client.get("/api/vendor/");
+          const vendorRes = await client.get("/vendor/");
           vendorRaw = vendorRes.data;
           if (Array.isArray(vendorRaw)) {
             vendorRaw = vendorRaw.find((v: any) => (v.user ?? v.user_id) === authState.user!.id) || vendorRaw;
@@ -370,7 +370,7 @@ export default function App() {
 
     try {
       // ✅ FIX: Use client.delete instead of fetch
-      await client.delete(`/api/builds/saved-builds/${savedBuildId}/`);
+      await client.delete(`/builds/saved-builds/${savedBuildId}/`);
 
       setSavedBuilds((prev) => prev.filter((b) => b.id !== savedBuildId));
       toast.success("Saved build removed!");
