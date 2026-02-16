@@ -1,3 +1,4 @@
+// src/components/AuthModal.tsx (Deployment File with Dev Theme)
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
@@ -5,7 +6,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { User as UserType } from '../types';
-import client from '../api/client'; // ✅ Use your centralized client
+import client from '../api/client'; // ✅ Centralized client for production
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -31,7 +32,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
     setIsLoading(true);
     setErrors({});
     try {
-      // ✅ Use client instead of fetch
+      // ✅ Use client instead of fetch for production
       const response = await client.post("/auth/login/", {
         username: loginForm.username,
         password: loginForm.password,
@@ -70,7 +71,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
     setIsLoading(true);
     setErrors({});
     try {
-      // ✅ Use client instead of fetch
+      // ✅ Use client instead of fetch for production
       const response = await client.post("/auth/signup/", {
         username: signupForm.username,
         email: signupForm.email,
@@ -89,7 +90,7 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
         createdAt: '',
       };
 
-      // ✅ Synchronize key name
+      // ✅ Synchronize key name with production needs
       localStorage.setItem("access_token", token);
       onSignup(user, token);
       onClose();
@@ -105,7 +106,16 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
     <AnimatePresence>
       {isOpen && (
         <Dialog open={isOpen} onOpenChange={onClose}>
-          <DialogContent className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-8 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] text-gray-300">
+          {/* 🔹 Dev Theme Backdrop Added */}
+          <motion.div
+            className="fixed inset-0 bg-black/50 z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+          
+          {/* 🔹 Dev Theme Dialog Content */}
+          <DialogContent className="bg-gradient-to-br from-slate-900 via-gray-900 to-black p-8 rounded-2xl border border-cyan-500/40 shadow-[0_0_20px_cyan] text-gray-300 z-50">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} 
               animate={{ opacity: 1, scale: 1 }} 
@@ -114,57 +124,58 @@ export default function AuthModal({ isOpen, onClose, onLogin, onSignup }: AuthMo
               <DialogTitle className="text-white text-2xl font-mono">Authentication</DialogTitle>
 
               {errors.general && (
-                <div className="p-3 rounded bg-red-500/10 border border-red-500/50 text-red-500 text-sm">
-                  {errors.general}
-                </div>
+                <p className="text-red-500">{errors.general}</p>
               )}
 
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'signup')}>
-                <TabsList className="bg-gray-800/50 w-full mb-6">
-                  <TabsTrigger value="login" className="flex-1">Login</TabsTrigger>
-                  <TabsTrigger value="signup" className="flex-1">Sign Up</TabsTrigger>
+                {/* 🔹 Dev Theme Tabs */}
+                <TabsList className="bg-gray-800 rounded-lg border border-cyan-500/30 w-full mb-6">
+                  <TabsTrigger value="login" className="flex-1 text-cyan-400">Login</TabsTrigger>
+                  <TabsTrigger value="signup" className="flex-1 text-cyan-400">Sign Up</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="login" className="space-y-4">
+                <TabsContent value="login" className="flex flex-col space-y-4">
+                  {/* 🔹 Dev Theme Inputs */}
                   <Input
                     placeholder="Username"
                     value={loginForm.username}
                     onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                    className="bg-gray-800/50 border-cyan-500/30 focus:border-cyan-400"
+                    className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
                   />
                   <Input
                     type="password"
                     placeholder="Password"
                     value={loginForm.password}
                     onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                    className="bg-gray-800/50 border-cyan-500/30 focus:border-cyan-400"
+                    className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
                   />
-                  <Button onClick={handleLogin} disabled={isLoading} className="w-full bg-cyan-600 hover:bg-cyan-500">
+                  {/* 🔹 Dev Theme Button styling with Production Text */}
+                  <Button onClick={handleLogin} disabled={isLoading} className="w-full neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50">
                     {isLoading ? "Validating..." : "Enter System"}
                   </Button>
                 </TabsContent>
 
-                <TabsContent value="signup" className="space-y-4">
+                <TabsContent value="signup" className="flex flex-col space-y-4">
                   <Input
                     placeholder="Username"
                     value={signupForm.username}
                     onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
-                    className="bg-gray-800/50 border-cyan-500/30"
+                    className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
                   />
                   <Input
                     placeholder="Email"
                     value={signupForm.email}
                     onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                    className="bg-gray-800/50 border-cyan-500/30"
+                    className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
                   />
                   <Input
                     type="password"
                     placeholder="Password"
                     value={signupForm.password}
                     onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                    className="bg-gray-800/50 border-cyan-500/30"
+                    className="bg-gray-800 text-gray-300 placeholder-gray-500 border border-cyan-500/30"
                   />
-                  <Button onClick={handleSignup} disabled={isLoading} className="w-full bg-purple-600 hover:bg-purple-500">
+                  <Button onClick={handleSignup} disabled={isLoading} className="w-full neon-button bg-cyan-900/30 hover:bg-cyan-900/50 text-white border-cyan-500/50">
                     {isLoading ? "Initializing..." : "Create Account"}
                   </Button>
                 </TabsContent>
