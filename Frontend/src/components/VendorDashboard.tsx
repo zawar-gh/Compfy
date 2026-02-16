@@ -272,6 +272,12 @@ export default function VendorDashboard({ vendor, onRegisterShop, onBackToSelect
         onInventoryUploaded={handleInventoryUploaded}
         vendor={vendor!}
       />
+      <footer className="mt-12 pt-6 border-t border-slate-800/50 text-center">
+        <p className="text-xs text-gray-500">
+          © Compfy - All Rights Reserved - Developed by Zawar Ahmed @ PureLogics
+          <span className="block sm:inline sm:ml-1">(Contact: zawarlt500@gmail.com - 03277894326)</span>
+        </p>
+      </footer>
     </div>
   );
 }
