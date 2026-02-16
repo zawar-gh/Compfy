@@ -94,22 +94,11 @@ export default function RoleSelection({ onSelectRole }: RoleSelectionProps) {
           </Card>
         </motion.div>
       </div>
-      <footer className="mt-20 pb-8 text-center border-t border-slate-800/40">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 1 }}
-          className="pt-8"
-        >
-          <p className="text-xs font-mono tracking-widest text-gray-500 uppercase">
-            © Compfy - All Rights Reserved
-          </p>
-          <p className="text-[11px] text-gray-600 mt-2">
-            Developed by <span className="text-cyan-500/70">Zawar Ahmed @ PureLogics</span>
-            <span className="mx-2">|</span>
-            zawarlt500@gmail.com — 03277894326
-          </p>
-        </motion.div>
+      <footer className="mt-12 pt-6 border-t border-slate-800/50 text-center">
+        <p className="text-xs text-gray-500">
+          © Compfy - All Rights Reserved - Developed by Zawar Ahmed @ PureLogics
+          <span className="block sm:inline sm:ml-1">(Contact: zawarlt500@gmail.com - 03277894326)</span>
+        </p>
       </footer>
     </div>
   );
