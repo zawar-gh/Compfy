@@ -1,4 +1,4 @@
-import client from "../api/client"; // centralized Axios instance
+import client from "../api/client"; 
 
 // 🔹 Helper to get auth headers
 const getAuthHeaders = (token?: string) => {
@@ -6,9 +6,8 @@ const getAuthHeaders = (token?: string) => {
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 };
 
-// ------------------- Shops -------------------
+// ------------------- Shops / Vendors -------------------
 
-// Register a new shop/vendor
 export const registerShop = async (shopData: any, token?: string) => {
   const res = await client.post("/shops/", shopData, {
     headers: getAuthHeaders(token),
@@ -16,7 +15,6 @@ export const registerShop = async (shopData: any, token?: string) => {
   return res.data;
 };
 
-// Get all shops
 export const getShops = async (token?: string) => {
   const res = await client.get("/shops/", {
     headers: getAuthHeaders(token),
@@ -24,9 +22,42 @@ export const getShops = async (token?: string) => {
   return res.data;
 };
 
+export const getVendor = async (token?: string) => {
+  const res = await client.get("/vendor/", {
+    headers: getAuthHeaders(token),
+  });
+  return res.data;
+};
+
+// ------------------- Vendor Builds -------------------
+
+export const getVendorBuilds = async (token?: string) => {
+  const res = await client.get("/builds/", {
+    headers: getAuthHeaders(token),
+  });
+  return res.data;
+};
+
+export const createVendorBuild = async (buildData: any, token?: string) => {
+  const res = await client.post("/builds/", buildData, {
+    headers: getAuthHeaders(token),
+  });
+  return res.data;
+};
+
+/**
+ * 🛠️ FIX: Adjusted signature to (vendorId, buildId) 
+ * to match CheckInventoryPage.tsx:160 and 183
+ */
+export const deleteBuild = async (vendorId: number | string, buildId: number | string, token?: string) => {
+  const res = await client.delete(`/builds/${buildId}/`, {
+    headers: getAuthHeaders(token),
+  });
+  return res.data;
+};
+
 // ------------------- Inventory -------------------
 
-// Fetch inventory for a vendor/shop
 export const getInventory = async (vendorId: number, token?: string) => {
   const res = await client.get(`/inventory/${vendorId}/`, {
     headers: getAuthHeaders(token),
@@ -34,7 +65,6 @@ export const getInventory = async (vendorId: number, token?: string) => {
   return res.data;
 };
 
-// Bulk update inventory
 export const bulkUpdateInventory = async (vendorId: number, builds: any[], token?: string) => {
   const res = await client.put(
     `/inventory/${vendorId}/bulk-update/`,
@@ -44,7 +74,6 @@ export const bulkUpdateInventory = async (vendorId: number, builds: any[], token
   return res.data;
 };
 
-// Upload inventory via Excel/CSV
 export const uploadInventory = async (vendorId: number, file: File, token?: string) => {
   const formData = new FormData();
   formData.append("file", file);
