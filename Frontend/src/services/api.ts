@@ -30,7 +30,7 @@ export const createVendorBuild = async (buildData: any) => {
 };
 
 // Delete a build
-export const deleteVendorBuild = async (buildId: number | string) => {
+export const deleteBuild = async (buildId: number | string) => {
   const res = await client.delete(`/builds/${buildId}/`);
   return res.data;
 };
