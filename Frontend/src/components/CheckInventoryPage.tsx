@@ -172,7 +172,7 @@ export default function CheckInventoryPage({ vendor, onBack }: CheckInventoryPag
       try {
         setIsLoading(true);
         await Promise.all(realIds.map(id => deleteBuild(vendor.id, id)));
-        toast.success(`Deleted ${realIds.length} builds from server`);
+        toast.success(`Deleted ${realIds.length} builds`);
       } catch (err) {
         console.error("❌ Failed to delete from backend:", err);
         toast.error("Failed to delete from server");
@@ -196,7 +196,7 @@ const handleDeleteAll = async () => {
         setIsLoading(true);
         // ✅ REPLACED: Clean API call using our axios client
         await Promise.all(realIds.map(id => deleteBuild(vendor.id, id)));
-        toast.success("All inventory cleared from server");
+        toast.success("All inventory cleared");
       } catch (err) {
         console.error("❌ Failed to delete all:", err);
         toast.error("Server error while clearing inventory");
