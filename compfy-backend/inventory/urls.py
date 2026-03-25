@@ -1,4 +1,3 @@
-# inventory/urls.py
 from django.urls import path
 from . import views
 from .views import VendorInventoryView, InventoryItemUpdateView, InventoryUploadView, BulkUpdateInventoryView
@@ -12,8 +11,10 @@ urlpatterns = [
 
     # Upload inventory via CSV/Excel
     path('<int:vendor_id>/upload/', InventoryUploadView.as_view(), name='upload-inventory'),
-    path('<int:vendor_id>/bulk-update/', BulkUpdateInventoryView.as_view()),
+
+    # Bulk update inventory
+    path('<int:vendor_id>/bulk-update/', BulkUpdateInventoryView.as_view(), name='bulk-update-inventory'),
+
+    # Delete a vendor build
     path('vendor/<int:vendor_id>/build/<int:build_id>/delete/', views.delete_vendor_build, name='delete_vendor_build'),
-
-
 ]

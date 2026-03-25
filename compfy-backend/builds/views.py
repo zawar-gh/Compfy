@@ -80,8 +80,6 @@ def get_builds_view(request):
     }
     user_preferences = {k: v for k, v in user_preferences.items() if v is not None}
     builds = get_recommended_builds(user_preferences)
-    # TODO: serialize & return builds if needed
-
 
 @api_view(['POST'])
 def refresh_build_categories(request):

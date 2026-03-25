@@ -50,12 +50,11 @@ export const createVendorBuild = async (buildData: any, token?: string) => {
  * to match CheckInventoryPage.tsx:160 and 183
  */
 export const deleteBuild = async (vendorId: number | string, buildId: number | string, token?: string) => {
-  const res = await client.delete(`/builds/${buildId}/`, {
+  const res = await client.delete(`/inventory/vendor/${vendorId}/build/${buildId}/delete/`, {
     headers: getAuthHeaders(token),
   });
   return res.data;
 };
-
 // ------------------- Inventory -------------------
 
 export const getInventory = async (vendorId: number, token?: string) => {

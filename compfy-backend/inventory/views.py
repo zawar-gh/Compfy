@@ -223,24 +223,20 @@ class BulkUpdateInventoryView(APIView):
 
 @api_view(['DELETE'])
 def delete_vendor_build(request, vendor_id, build_id):
-    from builds.utils import sync_vendor_builds
-
     try:
-        # Get the build
-        build = VendorBuild.objects.get(vendor__id=vendor_id, id=build_id)
+        # Fetch the vendor build
+        build = get_object_or_404(VendorBuild, vendor__id=vendor_id, id=build_id)
 
-        # Delete any related InventoryItem entries
+        # Delete related inventory items first
         InventoryItem.objects.filter(vendor__id=vendor_id, build=build).delete()
 
         # Delete the VendorBuild itself
         build.delete()
 
-        # Sync after deletion
+        # Sync builds after deletion
         sync_vendor_builds()
 
         return Response({"message": "Build deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
-    except VendorBuild.DoesNotExist:
-        return Response({"error": "Build not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
